@@ -43,6 +43,13 @@
 - [`exec-plans/active/sensor-day-1.md`](exec-plans/active/sensor-day-1.md)
 - [`exec-plans/active/site-day-1.md`](exec-plans/active/site-day-1.md)
 
+## Launch & Benchmarks
+
+- [`hackathon-launch.md`](hackathon-launch.md) — launch checklist and demo script
+- [`benchmark-standards.md`](benchmark-standards.md) — quality bar and acceptance criteria
+- [`modality-launch-surface.md`](modality-launch-surface.md) — per-modality external API surface
+- [`implementation-status.md`](implementation-status.md) — what ships now vs what is a typed stub
+
 ## Agent contact text (extended primers)
 
 - [`../packages/agent-contact-text/README.md`](../packages/agent-contact-text/README.md) — bundled 00–03 narrative corpus for coding agents (see also root [`AGENTS.md`](../AGENTS.md)).

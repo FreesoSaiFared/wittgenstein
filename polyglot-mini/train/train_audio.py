@@ -16,7 +16,11 @@ import math
 import os
 import re
 import sys
+import warnings
 import numpy as np
+
+np.seterr(over="ignore", divide="ignore", invalid="ignore")
+warnings.filterwarnings("ignore", category=RuntimeWarning, module="train")
 
 DIM_EMB = 256
 DIM_HID = 96

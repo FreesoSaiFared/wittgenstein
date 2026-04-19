@@ -15,7 +15,14 @@ import os
 import re
 import sys
 import time
+import warnings
 import numpy as np
+
+# Suppress overflow/divide warnings that can fire during early Adam steps;
+# the float64 forward/backward path is numerically stable but numpy still
+# emits RuntimeWarnings on intermediate exp() / log() calls.
+np.seterr(over="ignore", divide="ignore", invalid="ignore")
+warnings.filterwarnings("ignore", category=RuntimeWarning, module="train")
 
 DIM_EMB = 512
 DIM_HID1 = 256

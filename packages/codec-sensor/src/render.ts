@@ -1,5 +1,6 @@
-import { mkdir, stat, writeFile } from "node:fs/promises";
-import { dirname, extname } from "node:path";
+import { access, mkdir, stat, writeFile } from "node:fs/promises";
+import { dirname, extname, resolve as resolvePath } from "node:path";
+import { fileURLToPath } from "node:url";
 import { spawn } from "node:child_process";
 import type { RenderCtx, RenderResult } from "@wittgenstein/schemas";
 import type { SensorSignalSpec } from "./schema.js";
@@ -213,24 +214,23 @@ function toCsv(rows: SensorSample[]): string {
   return ["timeSec,value", ...rows.map((row) => `${row.timeSec},${row.value}`)].join("\n");
 }
 
+const __dir = dirname(fileURLToPath(import.meta.url));
+
 async function renderLoupeDashboard(
   csvPath: string,
   htmlPath: string,
   spec: SensorSignalSpec,
 ): Promise<boolean> {
-  // Search for loupe.py: repo root → package dir → cwd → PATH
-  const { resolve: resolvePath, dirname: dirPath } = await import("node:path");
-  const { fileURLToPath } = await import("node:url");
-  const __dir = dirPath(fileURLToPath(import.meta.url));
+  // Search for loupe.py: repo root → package dir → cwd → polyglot-mini sub-project
   const candidates = [
-    resolvePath(__dir, "../../../../loupe.py"),       // repo root
-    resolvePath(__dir, "../loupe.py"),                // package root
-    resolvePath(process.cwd(), "loupe.py"),           // cwd
+    resolvePath(__dir, "../../../../loupe.py"),           // repo root
+    resolvePath(__dir, "../loupe.py"),                    // package root
+    resolvePath(process.cwd(), "loupe.py"),               // cwd
     resolvePath(process.cwd(), "polyglot-mini/loupe.py"), // sub-project
   ];
   let loupePath: string | null = null;
   for (const c of candidates) {
-    try { await import("node:fs/promises").then(m => m.access(c)); loupePath = c; break; } catch { /* skip */ }
+    try { await access(c); loupePath = c; break; } catch { /* skip */ }
   }
   if (!loupePath) {
     // Try `loupe` on PATH
