@@ -1,18 +1,57 @@
 # Wittgenstein
 
-> *Die Grenzen meiner Sprache bedeuten die Grenzen meiner Welt.*
-> — Wittgenstein, Tractatus 5.6
+**A harness for text-first LLMs that emit real files.**
 
-The limits of a language model's expression are the limits of what a harness built on top of it can plan. That is not a problem to be solved with longer context windows or better prompts. It is a structural fact: if the model can only express a scene in tokens of natural language, the downstream renderer has no more information than that. Wittgenstein's response is to extend what the model can *express as structured files* — schemas, codec IR, latent codes — rather than what it can *say in tokens*. The expressive contract lives in code, not in prompt copy.
+[![CI](https://img.shields.io/github/actions/workflow/status/Moapacha/wittgenstein/ci.yml?branch=main&label=CI)](./.github/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue)](./LICENSE)
+[![Node](https://img.shields.io/badge/node-%3E%3D20.11-brightgreen)](./.nvmrc)
+[![pnpm](https://img.shields.io/badge/pnpm-%3E%3D9.0-f69220)](./package.json)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6)](./tsconfig.base.json)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-3776ab)](./polyglot-mini/requirements.txt)
 
-| Resource | |
-| --- | --- |
-| Upstream | `github.com/Moapacha/wittgenstein` |
-| Landing | `pnpm dev:site` → `apps/site` |
+> *Die Grenzen meiner Sprache bedeuten die Grenzen meiner Welt.* — Tractatus 5.6
 
-## Architecture
+The limits of a language model's expression are the limits of what a harness built on top
+of it can plan. Wittgenstein's response is to extend what the model can **express as structured
+files** — schemas, codec IR, latent codes — rather than what it can **say in tokens**. The
+expressive contract lives in code, not prompt copy.
 
-Five layers. Data flows top to bottom; schema preambles reflect back up from L2 into the LLM call.
+---
+
+## Why this exists
+
+Most "multimodal AI" stacks hide the hard parts in a fused frontier model, a paid cloud
+API, or the slide deck. None of those are portable, inspectable, or reproducible.
+
+Wittgenstein makes three architectural bets instead:
+
+- **Text LLMs, not fused multimodal giants.** The base model stays text-only. Modality-specific
+  work lives in codec layers. Cross-modal grounding is already inside the LLM — the adapter
+  teaches the interface, not the knowledge. ([research/frozen-llm-multimodality.md](docs/research/frozen-llm-multimodality.md))
+- **Decoder, not generator.** Frozen VQ decoders over diffusion samplers. Reproducibility is
+  structural — same IR + same seed → same bytes — not a policy bolt-on. ([research/vq-tokens-as-interface.md](docs/research/vq-tokens-as-interface.md))
+- **Traceable by construction.** Every run writes a manifest with git SHA, lockfile hash,
+  seed, full LLM input/output, and artifact SHA-256. Runs replay bit-exactly. ([reproducibility.md](docs/reproducibility.md))
+
+---
+
+## Receipts (not claims)
+
+| What | Number | How |
+|---|---|---|
+| Image style MLP validation loss | **0.7698 BCE** | 781 COCO captions, 9 s on CPU, 600 epochs |
+| Audio ambient classifier accuracy | **5 / 5 spot checks** | 369 examples, < 5 s on CPU, keyword + MLP hybrid |
+| LLM token cost: scene JSON vs raw pixels | **~ 52,000× less** | 60 tokens vs 1024×1024×3 pixel values |
+| Sensor expand latency | **< 2 ms** | Pure numpy, 250 Hz × 10 s ECG with operator spec |
+| Loupe HTML dashboard size | **~ 117 KB** | Zero external dependencies, single self-contained file |
+| Full typecheck + lint | **10 / 10 packages green** | Strict TS, ESLint, pnpm workspaces |
+
+Adapter training stats are from real runs; see [`docs/benchmark-standards.md`](docs/benchmark-standards.md)
+for the full measurement protocol.
+
+---
+
+## Architecture (Five Layers)
 
 ```
  User prompt
@@ -23,135 +62,169 @@ Five layers. Data flows top to bottom; schema preambles reflect back up from L2 
       ▼
   L2 IR / CODEC       LLM → structured JSON (scene spec / audio plan / signal spec)
       │   ▲
-      │   └── schema preamble injected before LLM call
+      │   └── schema preamble injected before the LLM call
       ▼
   L3 RENDERER         JSON → real file
-      │               image:  frozen VQ decoder → PNG
-      │               audio:  WAV synthesis + ambient mix → WAV/M4A
-      │               sensor: operator expand → CSV + loupe HTML
+      │               image:  frozen VQ decoder     → PNG
+      │               audio:  WAV synth + ambient   → WAV / M4A
+      │               sensor: operator expand       → CSV + loupe HTML
       ▼
   L4 ADAPTER          text embedding → latent code alignment (image only; tiny MLP)
-      │               (fires between L2 and L3; no adapter for audio/sensor)
+      │               (fires between L2 and L3; no adapter for audio/sensor today)
       ▼
-  L5 DIST             CLI · npm · AGENTS.md · run manifests → artifacts/runs/<id>/
+  L5 DIST             CLI · npm · AGENTS.md · artifacts/runs/<id>/manifest.json
 ```
 
-Every run leaves a manifest under `artifacts/runs/<run-id>/`. The harness is the contract; prompts are not.
+Every layer has a named home in the repo; no layer is "implied in prompts." See
+[`docs/architecture.md`](docs/architecture.md) for the full mapping.
 
-## Why VQ / Latent Tokens
+---
 
-Raw pixels are too large and too fragile as an LLM output surface. The better contract is:
-
-1. LLM outputs a structured scene spec (cheap, inspectable, schema-validated)
-2. A small adapter maps scene semantics to discrete latent codes
-3. A frozen decoder maps codes to pixels
-
-BPE tokens are to text what VQ tokens are to images: a finite codebook maps a continuous space to discrete indices that an autoregressive model can predict. DALL-E 1 (2021) demonstrated this bet works at scale. LlamaGen (2024) showed it works with a standard transformer architecture at competitive quality without diffusion.
-
-The adapter's job is narrow: translate scene semantics — what the LLM knows — into codebook indices — what the decoder expects. It does not learn image generation from scratch. That narrowness is intentional and is why the adapter can be tiny.
-
-## Decoder vs. Generator
-
-A diffusion model is a generator: it samples from a learned distribution on every run, is stochastic, compute-expensive, and produces results that vary with noise seed and sampler parameters. Inspecting why it produced a given image requires probing latent noise trajectories.
-
-A frozen VQ decoder is deterministic: given the same token sequence it produces the same pixels, analogous to a lookup table compressed into weights. Reproducibility is not a policy choice layered on top — it follows structurally from the architecture. This is why the repo favors decoder families such as LlamaGen, SEED, and dVAE-style bridges over diffusion generators as the local image path.
-
-## What Ships
-
-| Path | State | Output |
-| --- | --- | --- |
-| Image | Harness wired; MLP adapter trained on COCO | PNG |
-| TTS | CLI alias over audio speech route | WAV |
-| Audio | Speech, soundscape, music render locally | WAV |
-| Sensor | Deterministic operator spec → samples + dashboard | JSON, CSV, HTML |
-| Video | Composition IR scaffold; MP4 branch pending | Pending |
-| Image style adapter | 781 COCO examples, 9 s CPU train, val BCE 0.7698 | MLP weights |
-| Audio ambient classifier | 369 examples, <5 s, keyword + MLP hybrid | MLP weights |
-
-The adapter training numbers are not projections. They demonstrate that "tiny adapter" is a real implementation constraint, not a framing convenience.
-
-## polyglot-mini
-
-`polyglot-mini` is the Python rapid-prototype surface. It demonstrates the five-layer thesis end-to-end without requiring the TypeScript monorepo to be running. Use it to:
-
-- validate codec IR schemas against live LLM output
-- run the image adapter and frozen decoder pipeline locally
-- prototype new modality codecs before porting to the TS packages
-
-It is intentionally minimal. The TS monorepo remains the production harness; `polyglot-mini` is the proving ground.
-
-## Fast Start
+## Quickstart (30 seconds, no API key)
 
 ```bash
-pnpm install
-pnpm typecheck
-pnpm --filter @wittgenstein/cli exec wittgenstein --help
+cd polyglot-mini
+pip install -r requirements.txt
+python3 -m polyglot.cli sensor "ECG 72 bpm resting" --dry-run --out /tmp/ecg.json
+open /tmp/ecg.html    # self-contained interactive dashboard, zero deps
 ```
 
-## Demo Commands
+What you get:
+
+```
+/tmp/
+├── ecg.json    operator spec + 2,500 samples
+├── ecg.csv     timeSec,value
+├── ecg.png     matplotlib chart
+└── ecg.html    117 KB interactive loupe dashboard
+```
+
+Full tour: [`docs/quickstart.md`](docs/quickstart.md).
+
+---
+
+## Two surfaces, one architecture
+
+| Surface | Lives at | Best for |
+|---|---|---|
+| **Python prototype** | `polyglot-mini/` | Rapid iteration, demos, adapter training, hackathon velocity |
+| **TypeScript harness** | `packages/*` | Typed contracts, strict CI gates, production distribution |
+
+Both implement the same five layers. Start on the Python side, graduate to TypeScript when
+the codec design is stable. See [`docs/extending.md`](docs/extending.md) for the porting recipe.
+
+---
+
+## CLI
 
 ```bash
-pnpm demo:sensor
-pnpm demo:audio
-pnpm demo:tts
-pnpm train:audio-adapter
-pnpm launch:check
-pnpm benchmark
+# Python surface — full end-to-end, works today
+python3 -m polyglot.cli image  "stormy ocean at midnight"      --out ocean.png
+python3 -m polyglot.cli tts    "Cozy rainy afternoon."         --out voice.m4a
+python3 -m polyglot.cli sensor "ECG 72 bpm resting" --dry-run  --out ecg.json
+
+# TypeScript surface — typed harness, manifest spine, CI-backed
+pnpm --filter @wittgenstein/cli exec wittgenstein sensor  "stable ECG" --dry-run --out artifacts/demo/ecg.json
+pnpm --filter @wittgenstein/cli exec wittgenstein audio   "soft launch music" --route music --dry-run
+pnpm --filter @wittgenstein/cli exec wittgenstein doctor
 ```
 
-Artifacts land in `artifacts/demo/`.
+---
 
-## CLI Surface
+## Reproducibility
+
+Every run leaves an artifact trail:
+
+```
+artifacts/runs/2026-04-20T14-52-33_a3f9b2/
+├── manifest.json      # git SHA, lockfile hash, seed, costs, artifact SHA-256
+├── llm-input.txt      # full prompt with preamble
+├── llm-output.txt     # raw model output
+└── artifact.{png,wav,json,html}
+```
+
+Same inputs + same seed + same lockfile → identical artifact bytes. Diffusion sampling
+cannot offer this; frozen VQ decoding does. See [`docs/reproducibility.md`](docs/reproducibility.md).
+
+---
+
+## Docs map
+
+### For engineers
+- [`docs/architecture.md`](docs/architecture.md) — five-layer system, dataflow, package layout
+- [`docs/codec-protocol.md`](docs/codec-protocol.md) — the `WittgensteinCodec` contract every codec obeys
+- [`docs/reproducibility.md`](docs/reproducibility.md) — manifest spine and seed rules
+- [`docs/implementation-status.md`](docs/implementation-status.md) — Ships / Partial / Stub matrix
+- [`docs/hard-constraints.md`](docs/hard-constraints.md) — what will not change
+
+### For hackers
+- [`docs/quickstart.md`](docs/quickstart.md) — 30 seconds to a real file
+- [`polyglot-mini/README.md`](polyglot-mini/README.md) — Python surface deep-dive
+- [`docs/extending.md`](docs/extending.md) — add a codec, train an adapter, plug in a provider
+
+### For researchers
+- [`docs/research/vq-tokens-as-interface.md`](docs/research/vq-tokens-as-interface.md) — why discrete VQ tokens as the LLM–decoder bridge
+- [`docs/research/compression-view-of-llms.md`](docs/research/compression-view-of-llms.md) — LLMs as neural compressors; why structured IR beats pixel emission
+- [`docs/research/frozen-llm-multimodality.md`](docs/research/frozen-llm-multimodality.md) — frozen backbone + adapter vs. end-to-end multimodal giants
+- [`docs/research/neural-codec-references.md`](docs/research/neural-codec-references.md) — annotated lineage: VQ-VAE → VQGAN → DALL-E 1 → LlamaGen → SEED → TiTok
+- [`docs/benchmark-standards.md`](docs/benchmark-standards.md) — FID / CLIPScore / WER / UTMOS / discriminative-score protocol
+- [`docs/adrs/`](docs/adrs/) — architecture decision records
+
+---
+
+## Extensibility
+
+Two surfaces, one contract. Adding a modality takes six steps on either side. See
+[`docs/extending.md`](docs/extending.md) for concrete recipes covering:
+
+- A new codec (TypeScript and Python)
+- A new LLM provider
+- A new trained adapter
+- A new benchmark case
+- Non-negotiable rules (decoder ≠ generator, no silent fallbacks, schema at every boundary)
+
+---
+
+## Install
 
 ```bash
-wittgenstein init
-wittgenstein image  "scene prompt" --out out.png
-wittgenstein tts    "launch voiceover" --ambient rain --out out.wav
-wittgenstein audio  "ambient score" --route music --out out.wav
-wittgenstein video  "video prompt" --out out.mp4
-wittgenstein sensor "stable ecg trace" --out out.json
-wittgenstein doctor
+git clone https://github.com/Moapacha/wittgenstein.git
+cd wittgenstein
+
+# TypeScript harness
+nvm use && corepack enable && pnpm install && pnpm typecheck
+
+# Python surface
+cd polyglot-mini && pip install -r requirements.txt
 ```
 
-## Benchmarks
+Requirements: Node ≥ 20.11, pnpm ≥ 9.0, Python ≥ 3.10. See [`CONTRIBUTING.md`](CONTRIBUTING.md)
+for the full developer setup.
 
-The harness reports cost, latency, and modality-specific smoke metrics per run. Longer-term standard targets:
+---
 
-- `image`: FID and CLIPScore
-- `tts/audio`: MOS and ASR-based WER/PER
-- `sensor`: discriminative score and predictive score
-- `video`: FVD and Video-Bench once the MP4 branch lands
+## Status
 
-See `benchmarks/README.md` and `docs/benchmark-standards.md`.
+See [`docs/implementation-status.md`](docs/implementation-status.md) for component-level detail.
+Summary: sensor, audio, polyglot-mini image fallback, and the Python image code-as-painter
+path all ship today; the TS neural image codec has real scene + adapter + placeholder
+latents and is waiting on a frozen VQ decoder bridge; video is a typed stub.
 
-## Key Docs
+Roadmap: [`ROADMAP.md`](ROADMAP.md). Changelog: [`CHANGELOG.md`](CHANGELOG.md).
+Security: [`SECURITY.md`](SECURITY.md).
 
-- `AGENTS.md` — working rules and repo map
-- `docs/architecture.md` — five-layer system detail
-- `docs/codecs/image.md` — image path, discrete latents, decoder posture
-- `docs/codec-protocol.md` — codec contract
-- `docs/reproducibility.md` — manifest spine and seed rules
-- `packages/cli/README.md` — npm-facing CLI usage
+---
 
-## Workspace Layout
+## Locked constraints
 
-- `packages/schemas` — shared zod schemas and codec contracts
-- `packages/core` — harness runtime, routing, retry, telemetry, manifests
-- `packages/codec-image` — the only shipping image path
-- `packages/codec-audio` — WAV routes plus ambient layering
-- `packages/codec-video` — composition-first video scaffold
-- `packages/codec-sensor` — deterministic signal generation plus loupe sidecars
-- `packages/cli` — the `wittgenstein` command
-- `apps/site` — official site scaffold
-- `polyglot-mini` — Python rapid-prototype area; five-layer thesis end-to-end
+- Image has exactly one shipping path: LLM → JSON scene spec → adapter → frozen decoder → PNG
+- No diffusion generators in the core image path
+- No silent fallbacks — failures return structured errors with a manifest
+- Every run is traceable under `artifacts/runs/`
+- Shared contracts live in `@wittgenstein/schemas`; codec packages depend on schemas, not each other
 
-## Locked Constraints
-
-- image has exactly one shipping path
-- shared contracts live in `packages/schemas`
-- runs stay traceable under `artifacts/`
-- frozen decoders are in-bounds; general-purpose local image generators are not the main path
+---
 
 ## License
 
-Apache 2.0. See `LICENSE`.
+Apache 2.0. See [`LICENSE`](LICENSE).
