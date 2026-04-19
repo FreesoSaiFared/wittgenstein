@@ -1,0 +1,19 @@
+* @max
+
+/packages/core/src/runtime/ @wittgenstein-core
+/packages/core/src/llm/ @wittgenstein-core
+/packages/core/src/codecs/image.ts @wittgenstein-image
+/packages/core/src/codecs/audio.ts @wittgenstein-audio
+/packages/core/src/codecs/video.ts @wittgenstein-video
+/packages/core/src/codecs/sensor.ts @wittgenstein-sensor
+/packages/schemas/ @wittgenstein-core
+/packages/sandbox/ @wittgenstein-core
+/packages/codec-image/ @wittgenstein-image
+/packages/codec-audio/ @wittgenstein-audio
+/packages/codec-video/ @wittgenstein-video
+/packages/codec-sensor/ @wittgenstein-sensor
+/apps/site/ @max
+/docs/codecs/image.md @wittgenstein-image
+/docs/codecs/audio.md @wittgenstein-audio
+/docs/codecs/video.md @wittgenstein-video
+/docs/codecs/sensor.md @wittgenstein-sensor

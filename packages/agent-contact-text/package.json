@@ -1,0 +1,6 @@
+{
+  "name": "@wittgenstein/agent-contact-text",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Extended agent-facing primers (00–03) and narrative context for coding agents."
+}
