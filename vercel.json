@@ -1,0 +1,8 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "echo 'skip install — static deck only'",
+  "buildCommand": "echo 'skip build — static deck only'",
+  "outputDirectory": "apps/wittgenstein-kimi",
+  "cleanUrls": true
+}

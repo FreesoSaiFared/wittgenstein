@@ -24,6 +24,8 @@ import { registerSensorCodec } from "../codecs/sensor.js";
 import { registerSvgCodec } from "../codecs/svg.js";
 import { registerAsciipngCodec } from "../codecs/asciipng.js";
 import { generateSvgFromEngine } from "./svg-generation.js";
+import { buildSvgLocalGeneration } from "./svg-local.js";
+import { buildVideoCompositionFromInlineSvgs } from "./video-inline-svgs.js";
 import { generateAsciipngFromMinimax } from "./asciipng-minimax.js";
 
 export interface HarnessRunOptions {
@@ -124,15 +126,25 @@ export class Wittgenstein {
           ? await generateAsciipngFromMinimax(request, promptExpanded, seed, this.config.llm)
           : request.modality === "asciipng"
             ? buildAsciiPngGeneration(request)
-            : options.dryRun
-              ? createDryRunGeneration(request)
-              : request.modality === "svg"
-                ? await generateSvgFromEngine(promptExpanded, seed, this.config.svg)
-                : await this.generateStructured(promptExpanded, seed);
+            : request.modality === "video" && Array.isArray(request.inlineSvgs) && request.inlineSvgs.length > 0
+              ? buildVideoCompositionFromInlineSvgs(request)
+              : request.modality === "svg" && request.source === "local"
+                ? buildSvgLocalGeneration(request)
+                : options.dryRun
+                  ? createDryRunGeneration(request)
+                  : request.modality === "svg"
+                    ? await generateSvgFromEngine(promptExpanded, seed, this.config.svg)
+                    : await this.generateStructured(promptExpanded, seed);
 
       if (request.modality === "svg") {
-        manifest.llmProvider = "svg-engine";
-        manifest.llmModel = this.config.svg.inferenceUrl;
+        const raw = generation.raw;
+        if (raw && typeof raw === "object" && "svgLocal" in raw && (raw as { svgLocal?: boolean }).svgLocal === true) {
+          manifest.llmProvider = "svg-local";
+          manifest.llmModel = "geometry-from-prompt";
+        } else {
+          manifest.llmProvider = "svg-engine";
+          manifest.llmModel = this.config.svg.inferenceUrl;
+        }
       }
 
       if (request.modality === "asciipng" && request.source === "minimax") {
@@ -144,6 +156,19 @@ export class Wittgenstein {
       } else if (request.modality === "asciipng") {
         manifest.llmProvider = "local-asciipng";
         manifest.llmModel = "pseudo-ascii-raster";
+      }
+
+      if (request.modality === "video") {
+        const raw = generation.raw;
+        if (
+          raw &&
+          typeof raw === "object" &&
+          "videoInlineSvgs" in raw &&
+          (raw as { videoInlineSvgs?: boolean }).videoInlineSvgs === true
+        ) {
+          manifest.llmProvider = "inline-svgs";
+          manifest.llmModel = "filesystem";
+        }
       }
 
       budget.consume(
@@ -274,13 +299,9 @@ function buildAsciiPngGeneration(request: WittgensteinRequest): LlmGenerationRes
 
 function createDryRunGeneration(request: WittgensteinRequest): LlmGenerationResult {
   if (request.modality === "svg") {
-    const svg =
-      '<svg xmlns="http://www.w3.org/2000/svg" width="120" height="40"><rect width="120" height="40" fill="#153"/><text x="8" y="26" fill="#eee" font-size="13" font-family="system-ui,sans-serif">dry-run</text></svg>';
     return {
-      text: JSON.stringify({ svg }),
-      tokens: { input: 0, output: 0 },
-      costUsd: 0,
-      raw: { dryRun: true },
+      ...buildSvgLocalGeneration(request),
+      raw: { dryRun: true, svgLocal: true },
     };
   }
 

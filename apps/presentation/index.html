@@ -272,8 +272,8 @@
         <h1>Text-native models, file-native outputs.</h1>
         <p class="lede">
           A production-grade <strong style="color: var(--ink); font-weight: 600">portability layer</strong> for
-          text-first LLMs: the model plans in structured IR; codecs compile to PNG, audio, MP4, and sensor
-          artifacts—without pretending the base weights are a full VLM.
+          text-first LLMs: the model plans in structured IR; codecs cover raster PNG, vector SVG (separate modality),
+          audio, HyperFrames video, and sensor outputs—without pretending the base weights are a full VLM.
         </p>
         <div style="margin-top: 2rem; display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center">
           <span class="pill">Harness engineering</span>
@@ -296,8 +296,8 @@
         <div class="stack" style="max-width: 40rem; margin-top: 2rem">
           <div class="card">
             <p style="font-size: 0.95rem; color: var(--muted); line-height: 1.65">
-              The LLM stays the planner. The harness owns routing, schema preambles, validation, retries, budgets,
-              sandboxed execution, and traces under <span style="font-family: var(--font-mono); font-size: 0.85em">artifacts/runs/</span>.
+              The LLM stays the planner. The harness owns routing, schema injection, validation, retries, budgets,
+              sandbox, telemetry, and traces under <span style="font-family: var(--font-mono); font-size: 0.85em">artifacts/runs/</span>.
             </p>
           </div>
         </div>
@@ -312,7 +312,7 @@
         <div class="stack" style="margin-top: 1.5rem">
           <div class="row">
             <span class="row-num">L1</span>
-            <div class="row-body"><strong style="color: var(--ink)">Harness / runtime</strong> — router, retry, seed, budget, telemetry, sandbox.</div>
+            <div class="row-body"><strong style="color: var(--ink)">Harness / runtime</strong> — router, retry, seed, budget, telemetry, sandbox, invariants.</div>
           </div>
           <div class="row">
             <span class="row-num">L2</span>
@@ -328,7 +328,7 @@
           </div>
           <div class="row">
             <span class="row-num">L5</span>
-            <div class="row-body"><strong style="color: var(--ink)">Packaging</strong> — CLI, install scripts, skills, docs as system of record.</div>
+            <div class="row-body"><strong style="color: var(--ink)">Packaging</strong> — CLI, install, agent primers, shared schemas and manifests, skills, docs.</div>
           </div>
         </div>
       </div>
@@ -339,9 +339,9 @@
         <p class="eyebrow">Sole image path (locked)</p>
         <h2>Semantic JSON → adapter → frozen decoder → PNG.</h2>
         <p class="lede">
-          No SVG/HTML pixel hacks in the product path: the model emits a validated scene spec; the harness expands,
-          adapts to latent codes, decodes to raster, then packages a real file. Decoder ≠ generator; every run writes a
-          trace.
+          No SVG/HTML pixel hacks on the <strong style="color: var(--ink); font-weight: 600">raster image</strong> path: the model emits a validated scene spec; the harness expands,
+          adapts to latent codes, decodes to raster, then packages PNG. Decoder ≠ generator; every run writes a trace.
+          <strong style="color: var(--ink); font-weight: 600">SVG</strong> is its own modality (<code style="font-family: var(--font-mono); font-size: 0.88em">codec-svg</code> + grammar engine) and is not a substitute for that neural path.
         </p>
         <div class="diagram" aria-hidden="true">
 <span class="hl">User prompt</span>
@@ -364,19 +364,23 @@
         <div class="grid-2" style="margin-top: 1.75rem">
           <div class="card">
             <p class="eyebrow" style="margin-bottom: 0.5rem">Image</p>
-            <p style="font-size: 0.95rem; color: var(--muted)">Neural pipeline stub: scene spec, latent bridge, PNG packaging.</p>
+            <p style="font-size: 0.95rem; color: var(--muted)">Sole raster path: scene IR, adapter, frozen decoder, PNG—no SVG-as-PNG shortcuts.</p>
+          </div>
+          <div class="card">
+            <p class="eyebrow" style="margin-bottom: 0.5rem">SVG</p>
+            <p style="font-size: 0.95rem; color: var(--muted)">Vector track: grammar engine + Outlines JSON, strict parse, deterministic SVG write.</p>
           </div>
           <div class="card">
             <p class="eyebrow" style="margin-bottom: 0.5rem">Audio</p>
-            <p style="font-size: 0.95rem; color: var(--muted)">Routes for speech, soundscape, music—TTS and mixers to follow.</p>
+            <p style="font-size: 0.95rem; color: var(--muted)">Speech, soundscape, and music routes; TTS and mixers still landing behind the same contract.</p>
           </div>
           <div class="card">
             <p class="eyebrow" style="margin-bottom: 0.5rem">Video</p>
-            <p style="font-size: 0.95rem; color: var(--muted)">HyperFrames-shaped wrapper for HTML → MP4 compile path.</p>
+            <p style="font-size: 0.95rem; color: var(--muted)">HyperFrames HTML compositions by default; local MP4 when HyperFrames encode is enabled.</p>
           </div>
           <div class="card">
             <p class="eyebrow" style="margin-bottom: 0.5rem">Sensor</p>
-            <p style="font-size: 0.95rem; color: var(--muted)">Procedural signals and typed exports for time-series demos.</p>
+            <p style="font-size: 0.95rem; color: var(--muted)">Procedural signal IR and deterministic stubs for typed time-series exports.</p>
           </div>
         </div>
         <a class="cta" href="#s1">Back to top →</a>

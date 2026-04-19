@@ -722,7 +722,8 @@
       <h1>text-native models, file-native outputs.</h1>
       <p class="hero-lede">
         A production-grade <strong>portability layer</strong> for text-first LLMs: the model plans in structured IR;
-        codecs compile to PNG, audio, MP4, and sensor artifacts — without pretending the base weights are a full VLM.
+        codecs cover raster PNG (sole neural image path), <strong>vector SVG</strong> as its own modality, audio,
+        HyperFrames-shaped video, and sensor outputs — without pretending the base weights are a full VLM.
       </p>
       <a class="btn-terracotta" href="#s-layers">Inspect the five layers</a>
       <div class="pills">
@@ -766,6 +767,7 @@
         <span class="backed-item">TypeScript</span>
         <span class="backed-item">pnpm</span>
         <span class="backed-item">zod</span>
+        <span class="backed-item">schemas</span>
         <span class="backed-item">Node 20+</span>
         <span class="backed-item">Next.js</span>
         <span class="backed-item">Vitest</span>
@@ -778,7 +780,7 @@
         <h2 class="lowercase font-serif">thesis</h2>
         <p class="section-intro">
           Agent = Model + Harness — extended with modality codecs. The LLM stays the planner; the harness owns routing,
-          schemas, validation, retries, budgets, and traces.
+          schema injection, validation, retries, budgets, sandbox, telemetry, and traces.
         </p>
         <div class="grid-2">
           <div class="card-surface card-pad">
@@ -828,7 +830,7 @@
         <div class="layer-list">
           <div class="layer-row">
             <span class="layer-num">L1</span>
-            <p><strong>Harness / runtime</strong> — router, retry, seed, budget, telemetry, sandbox.</p>
+            <p><strong>Harness / runtime</strong> — router, retry, seed, budget, telemetry, sandbox, invariants.</p>
           </div>
           <div class="layer-row">
             <span class="layer-num">L2</span>
@@ -844,7 +846,10 @@
           </div>
           <div class="layer-row">
             <span class="layer-num">L5</span>
-            <p><strong>Packaging</strong> — CLI, install scripts, skills, docs as system of record.</p>
+            <p>
+              <strong>Packaging</strong> — CLI, install, agent primers, shared schemas (<code class="font-mono">RunManifest</code>),
+              skills, docs, distribution conventions.
+            </p>
           </div>
         </div>
       </div>
@@ -855,8 +860,9 @@
         <span class="section-number">03</span>
         <h2 class="lowercase font-serif">pipeline</h2>
         <p class="section-intro">
-          Sole image path (locked): semantic JSON → adapter → frozen decoder → PNG. Decoder ≠ generator; every run writes
-          a trace.
+          Sole <strong>raster image</strong> path (locked): semantic JSON → adapter → frozen decoder → PNG. Decoder ≠ generator; every
+          run writes a trace under <span class="font-mono">artifacts/runs/</span>. <strong>SVG</strong> is orthogonal: grammar-constrained engine →
+          <span class="font-mono">codec-svg</span> parse/write → <span class="font-mono">output.svg</span> — not a PNG escape hatch.
         </p>
         <div class="diagram-wrap">
           <div class="diagram" aria-hidden="true">
@@ -887,7 +893,9 @@
             <span class="font-mono" style="font-size: 0.7rem; color: var(--warm-silver); width: 2.5rem; text-align: right">42%</span>
           </div>
           <p class="bar-caption">
-            Illustrative only: runtime spine is further along; renderers remain mostly stubs until adapters land.
+            Illustrative only: runtime and shared contracts outpace finished renderers. Video writes HyperFrames HTML by default; set
+            <span class="font-mono">WITTGENSTEIN_HYPERFRAMES_RENDER=1</span> for local MP4. Neural image path still centers on adapter +
+            frozen decoder wiring; SVG follows the engine HTTP contract in <span class="font-mono">docs/codecs/svg.md</span>.
           </p>
         </div>
       </div>
@@ -903,19 +911,23 @@
         <div class="codec-grid">
           <div class="card-surface card-pad codec-card">
             <p class="label">Image</p>
-            <p>Neural pipeline stub: scene spec, latent bridge, PNG packaging.</p>
+            <p>Sole raster path: scene IR, latent adapter seam, frozen decoder, PNG packaging — no SVG-as-PNG shortcuts.</p>
+          </div>
+          <div class="card-surface card-pad codec-card">
+            <p class="label">SVG</p>
+            <p>Vector modality: Outlines JSON + grammar engine over HTTP, strict parse, deterministic <span class="font-mono">output.svg</span>.</p>
           </div>
           <div class="card-surface card-pad codec-card">
             <p class="label">Audio</p>
-            <p>Routes for speech, soundscape, music — TTS and mixers to follow.</p>
+            <p>Typed routes for speech, soundscape, and music; TTS and mixers still landing behind the same contract.</p>
           </div>
           <div class="card-surface card-pad codec-card">
             <p class="label">Video</p>
-            <p>HyperFrames-shaped wrapper for HTML → MP4 compile path.</p>
+            <p>Composition IR + HyperFrames wrapper: deterministic HTML with timing attributes; MP4 when local HyperFrames encode is on.</p>
           </div>
           <div class="card-surface card-pad codec-card">
             <p class="label">Sensor</p>
-            <p>Procedural signals and typed exports for time-series demos.</p>
+            <p>Procedural signal IR and deterministic stubs for typed time-series exports.</p>
           </div>
         </div>
       </div>

@@ -37,6 +37,8 @@ export type AudioRequest = z.infer<typeof AudioRequestSchema>;
 export const VideoRequestSchema = BaseRequestSchema.extend({
   modality: z.literal("video"),
   durationSec: z.number().positive().optional(),
+  /** Full SVG documents (e.g. from `--svg`); bypasses LLM when non-empty. */
+  inlineSvgs: z.array(z.string().min(1)).max(32).optional(),
 });
 export type VideoRequest = z.infer<typeof VideoRequestSchema>;
 
@@ -50,6 +52,8 @@ export type SensorRequest = z.infer<typeof SensorRequestSchema>;
 
 export const SvgRequestSchema = BaseRequestSchema.extend({
   modality: z.literal("svg"),
+  /** `engine`: grammar engine HTTP. `local`: deterministic vector art from prompt (no network). */
+  source: z.enum(["engine", "local"]).default("engine"),
 });
 export type SvgRequest = z.infer<typeof SvgRequestSchema>;
 
