@@ -20,7 +20,6 @@
     "release:npm": "node scripts/bundle.mjs && node scripts/prepare-npm-artifact.mjs"
   },
   "dependencies": {
-    "@wittgenstein/codec-video": "workspace:*",
     "@wittgenstein/core": "workspace:*",
     "@wittgenstein/schemas": "workspace:*",
     "commander": "^12.1.0",

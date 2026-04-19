@@ -1,8 +1,8 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
-  "installCommand": "true",
-  "buildCommand": "rm -rf _vercel-kimi-out && if [ -f apps/wittgenstein-kimi/index.html ]; then mkdir -p _vercel-kimi-out && cp -R apps/wittgenstein-kimi/. _vercel-kimi-out/; elif [ -f wittgenstein-kimi/index.html ]; then mkdir -p _vercel-kimi-out && cp -R wittgenstein-kimi/. _vercel-kimi-out/; elif [ -f index.html ]; then mkdir -p _vercel-kimi-out && tar --exclude=_vercel-kimi-out -cf - . | tar -xf - -C _vercel-kimi-out; else echo 'Wittgenstein static deck not found (expected repo root, apps/, or apps/wittgenstein-kimi/).' >&2; exit 1; fi",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "buildCommand": "pnpm --filter @wittgenstein/wittgenstein-kimi-deck run build && rm -rf _vercel-kimi-out && cp -R apps/wittgenstein-kimi/dist _vercel-kimi-out",
   "outputDirectory": "_vercel-kimi-out",
   "cleanUrls": true
 }

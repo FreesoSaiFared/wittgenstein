@@ -68,8 +68,8 @@ export type WittgensteinConfig = z.infer<typeof WittgensteinConfigSchema>;
 
 export const DEFAULT_WITTGENSTEIN_CONFIG: WittgensteinConfig = WittgensteinConfigSchema.parse({
   llm: {
-    provider: "openai-compatible",
-    model: "gpt-4.1-mini",
+    provider: "minimax",
+    model: "minimax/minimax-01",
     apiKeyEnv: "WITTGENSTEIN_LLM_API_KEY",
     maxOutputTokens: 4096,
     temperature: 0.2,

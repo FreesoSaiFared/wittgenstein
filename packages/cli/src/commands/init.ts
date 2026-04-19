@@ -7,8 +7,8 @@ const DEFAULT_CONFIG = `import type { WittgensteinConfig } from "@wittgenstein/s
 
 const config: WittgensteinConfig = {
   llm: {
-    provider: "openai-compatible",
-    model: "gpt-4.1-mini",
+    provider: "minimax",
+    model: "minimax/minimax-01",
     apiKeyEnv: "WITTGENSTEIN_LLM_API_KEY",
     maxOutputTokens: 4096,
     temperature: 0.2,
@@ -37,8 +37,8 @@ export default config;
 `;
 
 const DEFAULT_ENV = `WITTGENSTEIN_LLM_API_KEY=
-WITTGENSTEIN_LLM_MODEL=gpt-4.1-mini
-WITTGENSTEIN_LLM_PROVIDER=openai-compatible
+WITTGENSTEIN_LLM_MODEL=minimax/minimax-01
+WITTGENSTEIN_LLM_PROVIDER=minimax
 `;
 
 export function registerInitCommand(program: Command): void {

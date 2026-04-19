@@ -29,11 +29,17 @@
     "dev:presentation": "pnpm --filter @wittgenstein/presentation dev",
     "dev:wittgenstein-kimi": "pnpm --filter @wittgenstein/wittgenstein-kimi-deck dev"
   },
+  "pnpm": {
+    "overrides": {
+      "@types/react": "^19.2.5",
+      "@types/react-dom": "^19.2.3"
+    }
+  },
   "devDependencies": {
     "@wittgenstein/cli": "workspace:*",
     "@types/node": "^20.14.0",
-    "@types/react": "^18.3.3",
-    "@types/react-dom": "^18.3.0",
+    "@types/react": "^19.2.5",
+    "@types/react-dom": "^19.2.3",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
     "autoprefixer": "^10.4.20",

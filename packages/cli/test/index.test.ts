@@ -8,6 +8,7 @@ describe("@wittgenstein/cli", () => {
       .sort();
 
     expect(commandNames).toEqual([
+      "animate-html",
       "asciipng",
       "audio",
       "doctor",

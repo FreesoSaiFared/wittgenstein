@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import type { Command } from "commander";
-import { buildPlayableSlideshowHtml } from "@wittgenstein/codec-video";
+import { buildPlayableSlideshowHtml } from "../../../codec-video/src/playable-slideshow-html.js";
 import { resolveExecutionRoot } from "./shared.js";
 
 function collectSvgPath(value: string, previous: string[] | undefined): string[] {
@@ -55,7 +55,7 @@ export function registerAnimateHtmlCommand(program: Command): void {
       const html = buildPlayableSlideshowHtml({
         svgs: inlineSvgs,
         durationsSec,
-        title: options.title,
+        ...(options.title !== undefined && options.title !== "" ? { title: options.title } : {}),
         loop: !options.once,
       });
 
