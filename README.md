@@ -21,6 +21,13 @@ of it can plan. Wittgenstein's response is to extend what the model can **expres
 files** — schemas, codec IR, latent codes — rather than what it can **say in tokens**. The
 expressive contract lives in code, not prompt copy.
 
+> **🧪 Project status — early-stage, post-hackathon.** Wittgenstein is a prerelease
+> (`v0.1.0-alpha.2`) with a working Python surface, a production-shaped TypeScript
+> harness, and a few intentionally unfinished surfaces clearly flagged with ⚠️ or 🔴 in
+> [`docs/implementation-status.md`](docs/implementation-status.md). Breaking changes are
+> possible before `0.1.0`. **We are actively looking for early adopters and
+> contributors** — see [How to help](#how-to-help) below.
+
 ---
 
 ## Why this exists
@@ -275,11 +282,3 @@ Questions before you start? [`SUPPORT.md`](SUPPORT.md) shows where to ask what.
 ## License
 
 Apache 2.0. See [`LICENSE`](LICENSE).
-
-> **🧪 Project status — early-stage, post-hackathon.** Wittgenstein is a prerelease
-> (`v0.1.0-alpha.2`) with a working Python surface, a production-shaped TypeScript
-> harness, and a few intentionally unfinished surfaces clearly flagged with ⚠️ or 🔴 in
-> [`docs/implementation-status.md`](docs/implementation-status.md). Breaking changes are
-> possible before `0.1.0`. **We are actively looking for early adopters and
-> contributors** — see [How to help](#how-to-help) below.
-
