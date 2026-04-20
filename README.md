@@ -1,6 +1,6 @@
 # Wittgenstein
 
-**A harness for text-first LLMs that emit real files.**
+**The modality harness for text-first models.**
 
 [![CI](https://img.shields.io/github/actions/workflow/status/Moapacha/wittgenstein/ci.yml?branch=main&label=CI)](./.github/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](./LICENSE)
