@@ -205,6 +205,7 @@ cannot offer this; frozen VQ decoding does. See [`docs/reproducibility.md`](docs
 - [`docs/research/compression-view-of-llms.md`](docs/research/compression-view-of-llms.md) — LLMs as neural compressors; why structured IR beats pixel emission
 - [`docs/research/frozen-llm-multimodality.md`](docs/research/frozen-llm-multimodality.md) — frozen backbone + adapter vs. end-to-end multimodal giants
 - [`docs/research/neural-codec-references.md`](docs/research/neural-codec-references.md) — annotated lineage: VQ-VAE → VQGAN → DALL-E 1 → LlamaGen → SEED → TiTok
+- [`docs/research/briefs/README.md`](docs/research/briefs/README.md) — Phase P2 briefs: lineage, stance, horizon, CLI, benchmarks, site reconciliation
 - [`docs/benchmark-standards.md`](docs/benchmark-standards.md) — FID / CLIPScore / WER / UTMOS / discriminative-score protocol
 - [`docs/adrs/`](docs/adrs/) — architecture decision records
 
