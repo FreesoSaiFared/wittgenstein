@@ -3,7 +3,7 @@
 **Date:** 2026-04-23
 **Status:** Not started (placeholder)
 **Author:** —
-**Summary:** Define the smallest set of *standard* quality metrics per modality (image/audio/video/sensor) that Wittgenstein can run locally, reproducibly, without turning the repo into a benchmark zoo.
+**Summary:** Define the smallest set of _standard_ quality metrics per modality (image/audio/video/sensor) that Wittgenstein can run locally, reproducibly, without turning the repo into a benchmark zoo.
 
 ---
 
@@ -14,4 +14,3 @@
 ## Kill criteria
 
 ## Verdict
-

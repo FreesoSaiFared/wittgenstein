@@ -81,7 +81,7 @@ jobs:
         uses: crate-ci/typos@v1
 
       - name: Actionlint
-        uses: rhysd/actionlint@v1
+        uses: reviewdog/action-actionlint@v1
 
       - name: Dependency review (PR)
         if: github.event_name == 'pull_request'

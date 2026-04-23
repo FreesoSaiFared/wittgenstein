@@ -14,4 +14,3 @@
 ## Kill criteria
 
 ## Verdict
-
