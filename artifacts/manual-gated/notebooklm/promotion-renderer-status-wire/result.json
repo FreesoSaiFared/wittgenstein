@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "notebooklm-promotion-renderer-status-wire-v0",
+  "provider": "notebooklm",
+  "mode": "promotion_renderer_status_wire",
+  "ok": true,
+  "liveNotebookLMExecuted": false,
+  "commandsExecuted": [],
+  "wiredStatusSurfaces": [
+    "scripts/notebooklm_status_cockpit.sh",
+    "docs/status/notebooklm-provider-current-state.md",
+    "docs/status/notebooklm-lane-index.md"
+  ],
+  "renderedPromotionDecisionPaths": [
+    "artifacts/manual-gated/notebooklm/promotion-decision-renderer/executor-context-block-decision.md",
+    "artifacts/manual-gated/notebooklm/promotion-decision-renderer/patch-authority-block-decision.md"
+  ],
+  "authority": {
+    "mayCreateClaims": false,
+    "mayAuthorizeImplementation": false,
+    "requiresLocalPromotion": true,
+    "providerOutputOnly": true
+  }
+}

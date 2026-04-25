@@ -49,6 +49,17 @@ No merged lane so far has performed a real NotebookLM operation.
 
 The repository contains local machinery for a future `readonly-list` probe, but the current committed artifacts are synthetic, dry-run, or local verification artifacts.
 
+## Readable promotion decisions
+
+Promotion decisions now have Markdown renderings for quick human inspection:
+
+- `artifacts/manual-gated/notebooklm/promotion-decision-renderer/executor-context-block-decision.md`
+- `artifacts/manual-gated/notebooklm/promotion-decision-renderer/patch-authority-block-decision.md`
+
+The cockpit also reports how many rendered promotion-decision documents exist and lists their paths.
+
+Rendering remains inspection-only. It does not promote provider evidence and does not authorize patches.
+
 ## Remaining live-capture boundary
 
 The first possible live operation remains exactly one read-only command:

@@ -54,6 +54,8 @@ tracked_raw_count="$(git ls-files 'artifacts/manual-gated/notebooklm/**/transcri
 notebooklm_test_count="$(find polyglot-mini/tests -maxdepth 1 -type f \( -name 'test_notebooklm*.py' -o -name 'test_dossier.py' \) | wc -l | tr -d ' ')"
 notebooklm_schema_count="$(find docs/schemas -type f -name 'notebooklm-*.json' | wc -l | tr -d ' ')"
 notebooklm_artifact_json_count="$(find artifacts/manual-gated/notebooklm -type f -name '*.json' | wc -l | tr -d ' ')"
+promotion_decision_md_paths="$(find artifacts/manual-gated/notebooklm/promotion-decision-renderer -type f -name '*decision.md' 2>/dev/null | sort | tr '\n' '|' | sed 's/|$//')"
+promotion_decision_md_count="$(find artifacts/manual-gated/notebooklm/promotion-decision-renderer -type f -name '*decision.md' 2>/dev/null | wc -l | tr -d ' ')"
 
 export WITT_COCKPIT_RESULT="$RESULT"
 export WITT_COCKPIT_OK="$ok"
@@ -63,6 +65,8 @@ export WITT_COCKPIT_TRACKED_RAW_COUNT="$tracked_raw_count"
 export WITT_COCKPIT_TEST_COUNT="$notebooklm_test_count"
 export WITT_COCKPIT_SCHEMA_COUNT="$notebooklm_schema_count"
 export WITT_COCKPIT_ARTIFACT_JSON_COUNT="$notebooklm_artifact_json_count"
+export WITT_COCKPIT_PROMOTION_DECISION_MD_COUNT="$promotion_decision_md_count"
+export WITT_COCKPIT_PROMOTION_DECISION_MD_PATHS="$promotion_decision_md_paths"
 export WITT_COCKPIT_VERIFIER_RESULT="$VERIFIER_OUT/result.json"
 export WITT_COCKPIT_VERIFIER_STDOUT="$VERIFIER_STDOUT"
 export WITT_COCKPIT_VERIFIER_STDERR="$VERIFIER_STDERR"
@@ -83,6 +87,10 @@ result = {
     "notebooklmTestCount": int(os.environ["WITT_COCKPIT_TEST_COUNT"]),
     "notebooklmSchemaCount": int(os.environ["WITT_COCKPIT_SCHEMA_COUNT"]),
     "notebooklmArtifactJsonCount": int(os.environ["WITT_COCKPIT_ARTIFACT_JSON_COUNT"]),
+    "promotionDecisionMarkdownCount": int(os.environ["WITT_COCKPIT_PROMOTION_DECISION_MD_COUNT"]),
+    "promotionDecisionMarkdownPaths": [
+        path for path in os.environ["WITT_COCKPIT_PROMOTION_DECISION_MD_PATHS"].split("|") if path
+    ],
     "allLocalVerifierResult": os.environ["WITT_COCKPIT_VERIFIER_RESULT"],
     "allLocalVerifierStdout": os.environ["WITT_COCKPIT_VERIFIER_STDOUT"],
     "allLocalVerifierStderr": os.environ["WITT_COCKPIT_VERIFIER_STDERR"],
@@ -126,6 +134,11 @@ printf 'Tracked raw NotebookLM artifacts: %s\n' "$tracked_raw_count"
 printf 'NotebookLM tests: %s\n' "$notebooklm_test_count"
 printf 'NotebookLM schemas: %s\n' "$notebooklm_schema_count"
 printf 'NotebookLM artifact JSON files: %s\n' "$notebooklm_artifact_json_count"
+printf 'Rendered promotion decision docs: %s\n' "$promotion_decision_md_count"
+if [ -n "$promotion_decision_md_paths" ]; then
+  printf 'Promotion decision docs:\n'
+  printf '%s\n' "$promotion_decision_md_paths" | tr '|' '\n' | sed 's/^/  - /'
+fi
 
 if [ "$ok" != true ]; then
   exit 1
