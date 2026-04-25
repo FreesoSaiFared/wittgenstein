@@ -11,6 +11,7 @@
     "docs/decisions/DEC-0001-dossier-provider-boundary.md",
     "docs/decisions/DEC-0001-dossier-provider-boundary.scope.json",
     "docs/codecs/dossier.md",
+    "docs/progress/notebooklm-provider-status.md",
     "docs/schemas/patch-plan-ir-v0.json"
   ],
   "forbiddenPaths": [

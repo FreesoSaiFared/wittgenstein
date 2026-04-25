@@ -5,6 +5,7 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from polyglot.dossier import generate_dossier, replay_dossier, verify_patch_authority
 
@@ -84,11 +85,11 @@ class DossierTests(unittest.TestCase):
             capture_output=True,
         )
 
-    def _generate(self) -> dict:
+    def _generate(self, *, provider: str = "local") -> dict:
         out_path = self.root / "exports" / "executor-context.md"
         return generate_dossier(
             task="Implement the local dossier provider and authority gate.",
-            provider="local",
+            provider=provider,
             sources=[
                 str(self.root / "specs" / "task.md"),
                 str(self.root / "polyglot"),
@@ -122,6 +123,16 @@ class DossierTests(unittest.TestCase):
         self.assertTrue((run_dir / "planner-context.md").exists())
         self.assertTrue((run_dir / "executor-context.md").exists())
         self.assertTrue((run_dir / "manifest.json").exists())
+        self.assertTrue((run_dir / "provider-output.md").exists())
+
+        manifest = json.loads((run_dir / "manifest.json").read_text())
+        self.assertEqual(manifest["provider"], "local")
+        self.assertEqual(manifest["providerMeta"]["status"], "available")
+        self.assertEqual(manifest["providerOutputPath"], str(run_dir / "provider-output.md"))
+
+        provider_output = (run_dir / "provider-output.md").read_text()
+        self.assertIn("Provider: local", provider_output)
+        self.assertIn("Status: available", provider_output)
 
         ledger = self._ledger(run_dir)
         authority_classes = {claim["authorityClass"] for claim in ledger["claims"]}
@@ -129,6 +140,26 @@ class DossierTests(unittest.TestCase):
         self.assertIn("promoted_decision", authority_classes)
         self.assertIn("planning_inference", authority_classes)
         self.assertIn("execution_verified_fact", authority_classes)
+
+    def test_notebooklm_provider_unavailable_is_structured(self) -> None:
+        result = self._generate(provider="notebooklm")
+        self.assertFalse(result["ok"], result)
+        self.assertEqual(result["provider"], "notebooklm")
+        self.assertEqual(result["error"]["code"], "PROVIDER_UNAVAILABLE")
+        self.assertIn("provider_meta", result)
+        self.assertEqual(result["provider_meta"]["status"], "unavailable")
+
+        run_dir = Path(result["run_dir"])
+        manifest = json.loads((run_dir / "manifest.json").read_text())
+        self.assertFalse(manifest["ok"])
+        self.assertEqual(manifest["providerMeta"]["provider"], "notebooklm")
+        self.assertEqual(manifest["providerMeta"]["status"], "unavailable")
+        self.assertEqual(manifest["providerOutputPath"], str(run_dir / "provider-output.md"))
+
+        provider_output = (run_dir / "provider-output.md").read_text()
+        self.assertIn("Provider: notebooklm", provider_output)
+        self.assertIn("Status: unavailable", provider_output)
+        self.assertIn("No supported notebooklm-py environment detected.", provider_output)
 
     def test_executor_filtering_excludes_design_inference(self) -> None:
         result = self._generate()
@@ -147,7 +178,9 @@ class DossierTests(unittest.TestCase):
         expected_executor = (run_dir / "executor-context.md").read_text()
         replay_out = self.root / "replayed" / "executor-context.md"
 
-        replay = replay_dossier(str(run_dir), out_path=str(replay_out))
+        with mock.patch("polyglot.dossier._detect_notebooklm_environment", side_effect=AssertionError("replay should stay offline")):
+            replay = replay_dossier(str(run_dir), out_path=str(replay_out))
+
         self.assertTrue(replay["ok"], replay)
         self.assertEqual(replay_out.read_text(), expected_executor)
 

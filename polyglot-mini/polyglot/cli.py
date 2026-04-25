@@ -37,7 +37,7 @@ def main() -> int:
 
     p_dossier = sub.add_parser("dossier")
     p_dossier.add_argument("prompt")
-    p_dossier.add_argument("--provider", default="local")
+    p_dossier.add_argument("--provider", default="local", choices=("local", "notebooklm"))
     p_dossier.add_argument("--sources", nargs="+", required=True)
     p_dossier.add_argument("--out", default="artifacts/context/executor-context.md")
     p_dossier.add_argument("--max-files", type=int, default=8)
