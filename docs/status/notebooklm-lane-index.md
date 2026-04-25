@@ -37,6 +37,7 @@ NotebookLM can inform; local artifacts decide.
 | 24 | Promotion policy wire | `notebooklm-promotion-policy-wire.md` | `test_notebooklm_promotion_wire.py` | Dossier records planner-only state |
 | 25 | All-local verification | `notebooklm-all-local-verification.md` | `verify_notebooklm_all_local.sh` | Full local coherence check |
 | 26 | Current-state status | `notebooklm-provider-current-state.md` | all-local verifier | Compact state checkpoint |
+| 31 | Promotion decision renderer | `notebooklm-promotion-decision-renderer.md` | `test_notebooklm_promotion_render.py` | Renders decisions for inspection only |
 
 ## Main files by role
 
