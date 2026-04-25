@@ -32,7 +32,14 @@ The dossier codec is the first-pass context backend for Wittgenstein's Python pr
 
 ## NotebookLM status
 
-NotebookLM is intentionally left as a `NOT_IMPLEMENTED` seam for now. The local provider is the only supported authority-producing path in dossier-core.
+NotebookLM is a recognized dossier provider seam, not a core codec.
+
+- `--provider notebooklm` is accepted by the dossier CLI.
+- Dossier-core records provider metadata in `manifest.json`, `provider-output.md`, and the context pack.
+- If `notebooklm-py` or a safe CLI path is unavailable/unclear, dossier-core still writes the normal offline artifacts and returns a structured `PROVIDER_UNAVAILABLE` result instead of crashing.
+- Replay stays offline and re-renders from captured artifacts; it does not attempt to re-probe NotebookLM.
+
+The local provider remains the only supported authority-producing path today.
 
 ## Future target (Level B)
 
