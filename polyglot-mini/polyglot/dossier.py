@@ -94,8 +94,28 @@ def generate_dossier(
     run_dir = workspace_root / "artifacts" / "runs" / run_id
     run_dir.mkdir(parents=True, exist_ok=True)
 
+    requested_out = Path(out_path)
+    if not requested_out.is_absolute():
+        requested_out = (cwd / requested_out).resolve()
+    requested_out.parent.mkdir(parents=True, exist_ok=True)
+
     provider_metadata = _resolve_provider_metadata(provider)
     provider_error = _provider_error(provider_metadata)
+    provider_output_path = run_dir / "provider-output.md"
+
+    if provider_error is not None:
+        return _write_failed_manifest(
+            run_dir=run_dir,
+            task=task,
+            provider=provider,
+            provider_metadata=provider_metadata,
+            provider_output_path=provider_output_path,
+            out_path=str(requested_out),
+            workspace_root=workspace_root,
+            working_dir=cwd,
+            started=started,
+            error=provider_error,
+        )
 
     source_ledger = _build_source_ledger(task=task, sources=sources, cwd=cwd, max_files=max_files)
     claims = _build_claims(task=task, source_ledger=source_ledger)
@@ -125,16 +145,11 @@ def generate_dossier(
     planner_context = _render_planner_context(task=task, context_pack=context_pack, claims=claims)
     executor_context = _render_executor_context(task=task, context_pack=context_pack, claims=claims)
 
-    requested_out = Path(out_path)
-    if not requested_out.is_absolute():
-        requested_out = (cwd / requested_out).resolve()
-    requested_out.parent.mkdir(parents=True, exist_ok=True)
-
     _write_json(run_dir / "source-ledger.json", source_ledger)
     _write_json(run_dir / "claim-ledger.json", {"claims": claims})
     _write_json(run_dir / "codex-context-pack.json", context_pack)
     _write_json(run_dir / "patch-ledger.json", patch_template)
-    (run_dir / "provider-output.md").write_text(provider_output)
+    provider_output_path.write_text(provider_output)
     (run_dir / "planner-context.md").write_text(planner_context)
     (run_dir / "executor-context.md").write_text(executor_context)
     shutil.copyfile(run_dir / "executor-context.md", requested_out)
@@ -152,34 +167,34 @@ def generate_dossier(
         "baseSourceSnapshot": source_ledger["baseSourceSnapshot"],
         "requestedOutPath": str(requested_out),
         "artifactPath": str(run_dir / "executor-context.md"),
+        "providerOutputPath": str(provider_output_path),
         "plannerContextPath": str(run_dir / "planner-context.md"),
         "contextPackPath": str(run_dir / "codex-context-pack.json"),
         "claimLedgerPath": str(run_dir / "claim-ledger.json"),
         "sourceLedgerPath": str(run_dir / "source-ledger.json"),
         "patchLedgerPath": str(run_dir / "patch-ledger.json"),
-        "providerOutputPath": str(run_dir / "provider-output.md"),
         "startedAt": _utc_now(),
         "durationMs": duration_ms,
-        "ok": provider_error is None,
-        "error": provider_error.to_error() if provider_error else None,
+        "ok": True,
+        "error": None,
         "notebooklm": _legacy_notebooklm_status(provider_metadata),
     }
     _write_json(run_dir / "manifest.json", manifest)
     return {
-        "ok": provider_error is None,
+        "ok": True,
         "provider": provider,
         "run_dir": str(run_dir),
         "out_path": str(requested_out),
         "base_source_snapshot": source_ledger["baseSourceSnapshot"],
         "base_git_sha": source_ledger.get("baseGitSha"),
         "manifest_path": str(run_dir / "manifest.json"),
+        "provider_output_path": str(provider_output_path),
         "artifact_path": str(run_dir / "executor-context.md"),
         "planner_context_path": str(run_dir / "planner-context.md"),
         "executor_context_path": str(run_dir / "executor-context.md"),
         "provider_meta": provider_metadata,
-        "error": provider_error.to_error() if provider_error else None,
+        "error": None,
     }
-
 
 def replay_dossier(run_dir: str, *, out_path: str | None = None) -> dict:
     run_path = Path(run_dir).resolve()
@@ -715,47 +730,51 @@ def _render_provider_output(
     task: str,
     provider: str,
     provider_metadata: dict,
-    source_ledger: dict,
-    claims: list[dict],
+    source_ledger: dict | None = None,
+    claims: list[dict] | None = None,
 ) -> str:
     lines = [
         "# Provider Output",
         "",
-        f"- Task: {task}",
-        f"- Provider: {provider}",
-        f"- Base source snapshot: `{source_ledger['baseSourceSnapshot']}`",
-        "",
-        "## Provider metadata",
-        f"- Provider: {provider_metadata['provider']}",
-        f"- Status: {provider_metadata['status']}",
+        f"Task: {task}",
+        f"Provider: {provider}",
+        f"Status: {provider_metadata['status']}",
     ]
     mode = provider_metadata.get("mode")
     if mode:
-        lines.append(f"- Mode: `{mode}`")
+        lines.append(f"Mode: {mode}")
     reason = provider_metadata.get("reason")
     if reason:
-        lines.append(f"- Reason: {reason}")
+        lines.append(f"Reason: {reason}")
     smoke_command = provider_metadata.get("safeSmokeCommand")
     if smoke_command:
-        lines.append(f"- Safe smoke command: `{smoke_command}`")
+        lines.append(f"Safe smoke command: {smoke_command}")
     else:
-        lines.append("- Safe smoke command: none detected")
-    lines.append("- Raw metadata:")
-    lines.append(f"  - `{json.dumps(provider_metadata, sort_keys=True)}`")
-    lines.extend([
-        "",
-        "## Selected sources",
-    ])
-    for source in source_ledger["selectedSources"]:
-        lines.append(f"- `{source['sourceId']}` {source['path']} ({source['kind']})")
-        for snippet in source["snippets"]:
-            lines.append(f"  - `{snippet['snippetId']}` lines {snippet['lineStart']}-{snippet['lineEnd']}: {snippet['text']}")
+        lines.append("Safe smoke command: none detected")
+
     lines.append("")
-    lines.append("## Claims")
-    for claim in claims:
-        lines.append(
-            f"- `{claim['claimId']}` [{claim['authorityClass']}/{claim['status']}] {claim['text']}"
-        )
+    lines.append("## Raw provider metadata")
+    lines.append(json.dumps(provider_metadata, indent=2, sort_keys=True))
+
+    if source_ledger is not None:
+        lines.extend([
+            "",
+            f"Base source snapshot: {source_ledger['baseSourceSnapshot']}",
+            "",
+            "## Selected sources",
+        ])
+        for source in source_ledger["selectedSources"]:
+            lines.append(f"- `{source['sourceId']}` {source['path']} ({source['kind']})")
+            for snippet in source["snippets"]:
+                lines.append(f"  - `{snippet['snippetId']}` lines {snippet['lineStart']}-{snippet['lineEnd']}: {snippet['text']}")
+
+    if claims is not None:
+        lines.append("")
+        lines.append("## Claims")
+        for claim in claims:
+            lines.append(
+                f"- `{claim['claimId']}` [{claim['authorityClass']}/{claim['status']}] {claim['text']}"
+            )
     lines.append("")
     return "\n".join(lines)
 
@@ -824,32 +843,46 @@ def _write_failed_manifest(
     run_dir: Path,
     task: str,
     provider: str,
+    provider_metadata: dict,
+    provider_output_path: Path,
     out_path: str,
     workspace_root: Path,
+    working_dir: Path,
     started: float,
     error: DossierError,
 ) -> dict:
+    provider_output_path.write_text(
+        _render_provider_output(
+            task=task,
+            provider=provider,
+            provider_metadata=provider_metadata,
+        )
+    )
     manifest = {
         "runId": run_dir.name,
         "task": task,
         "provider": provider,
-        "providerMetadata": {"provider": provider, "status": "failed_before_capture"},
-        "providerMeta": {"provider": provider, "status": "failed_before_capture"},
+        "providerMetadata": provider_metadata,
+        "providerMeta": provider_metadata,
         "workspaceRoot": str(workspace_root),
+        "workingDirectory": str(working_dir),
         "requestedOutPath": out_path,
+        "providerOutputPath": str(provider_output_path),
         "startedAt": _utc_now(),
         "durationMs": int((time.time() - started) * 1000),
         "ok": False,
         "error": error.to_error(),
-        "notebooklm": {"status": "not_requested"},
+        "notebooklm": _legacy_notebooklm_status(provider_metadata),
     }
     _write_json(run_dir / "manifest.json", manifest)
     return {
         "ok": False,
         "provider": provider,
+        "provider_meta": provider_metadata,
         "run_dir": str(run_dir),
         "error": error.to_error(),
         "manifest_path": str(run_dir / "manifest.json"),
+        "provider_output_path": str(provider_output_path),
     }
 
 
