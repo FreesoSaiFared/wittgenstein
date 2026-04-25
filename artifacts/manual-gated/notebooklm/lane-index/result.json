@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "notebooklm-lane-index-v0",
+  "provider": "notebooklm",
+  "mode": "lane_index",
+  "ok": true,
+  "liveNotebookLMExecuted": false,
+  "commandsExecuted": [],
+  "indexDocument": "docs/status/notebooklm-lane-index.md",
+  "indexedPullRequests": [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26],
+  "authority": {
+    "mayCreateClaims": false,
+    "mayAuthorizeImplementation": false,
+    "requiresLocalPromotion": true,
+    "providerOutputOnly": true
+  }
+}
