@@ -14,6 +14,11 @@ from hashlib import sha256
 from pathlib import Path
 from typing import Iterable
 
+from .notebooklm_adapter import (
+    CONTRACT_VERSION as NOTEBOOKLM_PROVIDER_RESULT_CONTRACT_VERSION,
+    build_notebooklm_provider_request,
+    run_notebooklm_provider_adapter,
+)
 from .notebooklm_provider import preflight_notebooklm_provider
 
 TEXT_EXTENSIONS = {
@@ -100,6 +105,26 @@ def generate_dossier(
     requested_out.parent.mkdir(parents=True, exist_ok=True)
 
     provider_metadata = _resolve_provider_metadata(provider)
+    if provider == "notebooklm":
+        provider_request = build_notebooklm_provider_request(
+            task=task,
+            run_id=run_id,
+            workspace_root=workspace_root,
+            working_directory=cwd,
+            base_git_sha=None,
+            base_source_snapshot=None,
+            source_ledger_path=run_dir / "source-ledger.json",
+            claim_ledger_path=run_dir / "claim-ledger.json",
+            requested_out_path=requested_out,
+        )
+        preflight_metadata = json.loads(json.dumps(provider_metadata, sort_keys=True))
+        adapter_result = run_notebooklm_provider_adapter(
+            request=provider_request,
+            preflight=preflight_metadata,
+        )
+        provider_metadata["contractVersion"] = NOTEBOOKLM_PROVIDER_RESULT_CONTRACT_VERSION
+        provider_metadata["adapterResult"] = adapter_result
+        provider_metadata["adapterStatus"] = adapter_result.get("status")
     provider_error = _provider_error(provider_metadata)
     provider_output_path = run_dir / "provider-output.md"
 
@@ -755,6 +780,26 @@ def _render_provider_output(
     lines.append("")
     lines.append("## Raw provider metadata")
     lines.append(json.dumps(provider_metadata, indent=2, sort_keys=True))
+
+    adapter_result = provider_metadata.get("adapterResult")
+    if adapter_result:
+        lines.extend([
+            "",
+            "## Adapter skeleton result",
+            f"- Contract: `{adapter_result.get('contractVersion')}`",
+            f"- Status: {adapter_result.get('status')}",
+            f"- OK: {adapter_result.get('ok')}",
+            f"- Capture mode: `{adapter_result.get('capture', {}).get('mode')}`",
+            "- Authority:",
+            f"  - May create claims: {adapter_result.get('authority', {}).get('mayCreateClaims')}",
+            f"  - May authorize implementation: {adapter_result.get('authority', {}).get('mayAuthorizeImplementation')}",
+            f"  - Requires local promotion: {adapter_result.get('authority', {}).get('requiresLocalPromotion')}",
+        ])
+        adapter_errors = adapter_result.get("errors", [])
+        if adapter_errors:
+            lines.append("- Adapter/preflight errors:")
+            for error in adapter_errors:
+                lines.append(f"  - `{error.get('code')}` {error.get('message')}")
 
     if source_ledger is not None:
         lines.extend([
