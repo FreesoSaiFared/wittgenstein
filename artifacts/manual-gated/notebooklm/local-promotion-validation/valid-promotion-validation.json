@@ -1,0 +1,10 @@
+{
+  "allowedTargets": [
+    "executor_context"
+  ],
+  "allowsPatchAuthority": false,
+  "errors": [],
+  "ok": true,
+  "provider": "notebooklm",
+  "schemaVersion": "notebooklm-local-promotion-validation-v0"
+}

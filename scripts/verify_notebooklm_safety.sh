@@ -29,12 +29,8 @@ if [ -e "${SCHEMAS[0]}" ]; then
   done
 fi
 
-run_step "notebooklm unittest suite" env PYTHONPATH=polyglot-mini python3 -m unittest -v \
-  polyglot-mini/tests/test_dossier.py \
-  polyglot-mini/tests/test_notebooklm_adapter.py \
-  polyglot-mini/tests/test_notebooklm_provider_output_wire.py \
-  polyglot-mini/tests/test_notebooklm_redaction.py \
-  polyglot-mini/tests/test_notebooklm_live_runner.py
+mapfile -t NOTEBOOKLM_TESTS < <(find polyglot-mini/tests -maxdepth 1 -type f \( -name 'test_notebooklm*.py' -o -name 'test_dossier.py' \) | sort)
+run_step "notebooklm unittest suite" env PYTHONPATH=polyglot-mini python3 -m unittest -v "${NOTEBOOKLM_TESTS[@]}"
 
 run_step "diff whitespace check" git diff --check
 

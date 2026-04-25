@@ -39,16 +39,7 @@ mapfile -t NOTEBOOKLM_TESTS < <(find polyglot-mini/tests -maxdepth 1 -type f \( 
 
 step "python compile: NotebookLM modules and tests" python3 -m py_compile "${NOTEBOOKLM_MODULES[@]}" "${NOTEBOOKLM_TESTS[@]}"
 
-step "notebooklm unittest suite" env PYTHONPATH=polyglot-mini python3 -m unittest -v \
-  polyglot-mini/tests/test_dossier.py \
-  polyglot-mini/tests/test_notebooklm_adapter.py \
-  polyglot-mini/tests/test_notebooklm_provider_output_wire.py \
-  polyglot-mini/tests/test_notebooklm_redaction.py \
-  polyglot-mini/tests/test_notebooklm_live_runner.py \
-  polyglot-mini/tests/test_notebooklm_captured_fixture.py \
-  polyglot-mini/tests/test_notebooklm_capture_conversion.py \
-  polyglot-mini/tests/test_notebooklm_promotion_policy.py \
-  polyglot-mini/tests/test_notebooklm_promotion_wire.py
+step "notebooklm unittest suite" env PYTHONPATH=polyglot-mini python3 -m unittest -v "${NOTEBOOKLM_TESTS[@]}"
 
 step "diff whitespace check" git diff --check
 
