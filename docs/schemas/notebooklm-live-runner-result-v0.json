@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wittgenstein.local/schemas/notebooklm-live-runner-result-v0.json",
+  "title": "NotebookLM Live Runner Result v0",
+  "type": "object",
+  "required": ["schemaVersion", "provider", "mode", "status", "ok", "liveNotebookLMExecuted", "commandsExecuted", "redactedTranscriptPaths", "redactionReportPaths", "authority"],
+  "properties": {
+    "schemaVersion": { "const": "notebooklm-live-runner-result-v0" },
+    "provider": { "const": "notebooklm" },
+    "mode": { "const": "live_runner_guarded" },
+    "status": {
+      "enum": ["gate_missing", "home_missing", "readonly_enable_missing", "live_execution_disabled", "subprocess_execution_disabled", "ready_to_execute", "readonly_probe_captured", "readonly_probe_failed", "blocked"]
+    },
+    "ok": { "type": "boolean" },
+    "requestedOperation": { "type": "string" },
+    "command": { "const": "notebooklm list" },
+    "returncode": { "type": ["integer", "null"] },
+    "liveNotebookLMExecuted": { "type": "boolean" },
+    "commandsExecuted": { "type": "array", "items": { "type": "string" } },
+    "gate": { "type": "object", "additionalProperties": true },
+    "rawTranscriptPaths": { "type": "array", "items": { "type": "string" } },
+    "redactedTranscriptPaths": { "type": "array", "items": { "type": "string" } },
+    "redactionReportPaths": { "type": "array", "items": { "type": "string" } },
+    "errors": { "type": "array" },
+    "authority": {
+      "type": "object",
+      "required": ["mayCreateClaims", "mayAuthorizeImplementation", "requiresLocalPromotion"],
+      "properties": {
+        "mayCreateClaims": { "type": "boolean" },
+        "mayAuthorizeImplementation": { "type": "boolean" },
+        "requiresLocalPromotion": { "type": "boolean" },
+        "providerOutputOnly": { "type": "boolean" }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}
