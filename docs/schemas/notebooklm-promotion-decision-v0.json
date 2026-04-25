@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wittgenstein.local/schemas/notebooklm-promotion-decision-v0.json",
+  "title": "NotebookLM Promotion Decision v0",
+  "type": "object",
+  "required": ["schemaVersion", "provider", "target", "ok", "canEnterExecutorContext", "canAuthorizePatch", "requiresLocalPromotion", "errors", "authority"],
+  "properties": {
+    "schemaVersion": { "const": "notebooklm-promotion-decision-v0" },
+    "provider": { "const": "notebooklm" },
+    "target": { "type": "string" },
+    "ok": { "type": "boolean" },
+    "canEnterExecutorContext": { "type": "boolean" },
+    "canAuthorizePatch": { "type": "boolean" },
+    "providerResultStatus": { "type": ["string", "null"] },
+    "providerResultOk": { "type": ["boolean", "null"] },
+    "providerOutputOnly": { "type": ["boolean", "null"] },
+    "requiresLocalPromotion": { "type": "boolean" },
+    "errors": { "type": "array" },
+    "authority": {
+      "type": "object",
+      "required": ["providerMayCreateClaims", "providerMayAuthorizeImplementation", "localPromotionRequired"],
+      "properties": {
+        "providerMayCreateClaims": { "type": "boolean", "const": false },
+        "providerMayAuthorizeImplementation": { "type": "boolean", "const": false },
+        "localPromotionRequired": { "type": "boolean", "const": true }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}
