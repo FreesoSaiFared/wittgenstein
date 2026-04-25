@@ -1,7 +1,0 @@
-NOTEBOOKLM LIVE EXECUTION STUB
-status=stubbed_transcript_redacted
-wouldExecute=notebooklm list
-liveNotebookLMExecuted=false
-Authorization: Bearer stubbed_demo_token_abcdefghijklmnopqrstuvwxyz1234567890
-Cookie: SID=stubbed_sid_value; __Secure-1PSID=stubbed_secure_cookie_value
-NotebookLM can inform; local artifacts decide.

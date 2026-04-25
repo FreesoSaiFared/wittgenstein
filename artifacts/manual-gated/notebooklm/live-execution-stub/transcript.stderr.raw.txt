@@ -1,3 +1,0 @@
-NOTEBOOKLM LIVE EXECUTION STUB STDERR
-No NotebookLM command was executed.
-access_token=stubbed_demo_access_token_value
