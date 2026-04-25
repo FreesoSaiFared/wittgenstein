@@ -23,6 +23,8 @@ Environment checks were limited to local inspection only.
 
 Result: dossier records NotebookLM as `unavailable` in this environment.
 
+Follow-up contract probe: `docs/contracts/notebooklm-py-invocation-contract.md` records the stricter local invocation verdict for the contract lane on `feat/nblm/notebooklm-contract`.
+
 ## Current behavior
 
 Running `polyglot dossier ... --provider notebooklm` now:

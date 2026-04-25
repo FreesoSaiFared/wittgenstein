@@ -33,6 +33,8 @@ Verdict: **no NotebookLM-related Python module is importable in this local envir
 
 Because `pip` and `python3 -m pip` point at different interpreters, package detection was verified against the active `python3` interpreter as well as the shell `pip` command.
 
+Unrelated `pip` metadata warnings were observed for non-NotebookLM packages, but no warning mentioned `notebooklm`, `notebooklm-py`, or `notebooklm_py`.
+
 ### Package queries
 
 - `pip list | grep -i notebooklm` -> no matching rows

@@ -84,6 +84,7 @@ rg -n --hidden --glob '!.git' --glob '!.venv' --glob '!node_modules' \
 - `pip`: `/usr/bin/pip` (`python 3.12`)
 - `python3 -m pip --version`: `pip 26.0` for `python 3.14`
 - neither `pip` nor `python3 -m pip` reported a NotebookLM-related package
+- `pip list` emitted unrelated metadata warnings for other packages, but none referenced NotebookLM
 - all requested import probes failed with `ModuleNotFoundError`
 - `importlib.metadata` returned `NO_MATCHING_DISTRIBUTIONS`
 
