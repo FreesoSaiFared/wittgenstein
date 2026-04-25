@@ -1,0 +1,5 @@
+NotebookLM rendered promotion decisions
+=======================================
+Count: 2
+artifacts/manual-gated/notebooklm/promotion-decision-renderer/executor-context-block-decision.md
+artifacts/manual-gated/notebooklm/promotion-decision-renderer/patch-authority-block-decision.md
