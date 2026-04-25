@@ -20,6 +20,7 @@ from .notebooklm_adapter import (
     run_notebooklm_provider_adapter,
 )
 from .notebooklm_provider import preflight_notebooklm_provider
+from .notebooklm_promotion_policy import evaluate_notebooklm_provider_promotion
 
 TEXT_EXTENSIONS = {
     ".md",
@@ -125,6 +126,15 @@ def generate_dossier(
         provider_metadata["contractVersion"] = NOTEBOOKLM_PROVIDER_RESULT_CONTRACT_VERSION
         provider_metadata["adapterResult"] = adapter_result
         provider_metadata["adapterStatus"] = adapter_result.get("status")
+        promotion_decision = evaluate_notebooklm_provider_promotion(
+            adapter_result,
+            target="executor_context",
+        )
+        provider_metadata["promotionDecision"] = promotion_decision
+        provider_metadata["plannerOnlyUntilLocalPromotion"] = not promotion_decision.get(
+            "canEnterExecutorContext",
+            False,
+        )
     provider_error = _provider_error(provider_metadata)
     provider_output_path = run_dir / "provider-output.md"
 
@@ -799,6 +809,23 @@ def _render_provider_output(
         if adapter_errors:
             lines.append("- Adapter/preflight errors:")
             for error in adapter_errors:
+                lines.append(f"  - `{error.get('code')}` {error.get('message')}")
+
+    promotion_decision = provider_metadata.get("promotionDecision")
+    if promotion_decision:
+        lines.extend([
+            "",
+            "## Promotion policy decision",
+            f"- Target: `{promotion_decision.get('target')}`",
+            f"- OK: {promotion_decision.get('ok')}",
+            f"- Can enter executor context: {promotion_decision.get('canEnterExecutorContext')}",
+            f"- Can authorize patch: {promotion_decision.get('canAuthorizePatch')}",
+            f"- Requires local promotion: {promotion_decision.get('requiresLocalPromotion')}",
+        ])
+        promotion_errors = promotion_decision.get("errors", [])
+        if promotion_errors:
+            lines.append("- Promotion errors:")
+            for error in promotion_errors:
                 lines.append(f"  - `{error.get('code')}` {error.get('message')}")
 
     if source_ledger is not None:
