@@ -1,0 +1,20 @@
+{
+  "authority": {
+    "mayAuthorizeImplementation": false,
+    "mayCreateClaims": false,
+    "providerOutputOnly": true,
+    "requiresLocalPromotion": true
+  },
+  "changed": true,
+  "inputSha256": "a72bc37310a3157ff715852d11ca7c4ac8b0ca8d924ce82d40d417cad27e48ce",
+  "liveNotebookLMExecuted": false,
+  "outputSha256": "0e4de1859b0c79b16e7940783744ed8c9fe1403c842a3e05784e24f589a3b72d",
+  "redactions": [
+    {
+      "count": 1,
+      "type": "JSON_OR_ENV_TOKEN_FIELD"
+    }
+  ],
+  "schemaVersion": "notebooklm-redaction-report-v0",
+  "totalRedactions": 1
+}

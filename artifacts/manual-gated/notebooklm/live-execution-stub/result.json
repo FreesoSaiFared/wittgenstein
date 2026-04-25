@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "notebooklm-live-execution-stub-v0",
+  "provider": "notebooklm",
+  "mode": "live_execution_stub",
+  "status": "stubbed_transcript_redacted",
+  "ok": true,
+  "experimentId": "live-execution-stub",
+  "requestedOperation": "readonly-list",
+  "wouldExecuteCommand": "notebooklm list",
+  "manualGatePresent": true,
+  "notebooklmHomePresent": true,
+  "readonlyEnablePresent": true,
+  "liveEnablePresent": true,
+  "liveNotebookLMExecuted": false,
+  "commandsExecuted": [],
+  "rawTranscriptPaths": [
+    "artifacts/manual-gated/notebooklm/live-execution-stub/transcript.stdout.raw.txt",
+    "artifacts/manual-gated/notebooklm/live-execution-stub/transcript.stderr.raw.txt"
+  ],
+  "redactedTranscriptPaths": [
+    "artifacts/manual-gated/notebooklm/live-execution-stub/transcript.stdout.redacted.txt",
+    "artifacts/manual-gated/notebooklm/live-execution-stub/transcript.stderr.redacted.txt"
+  ],
+  "redactionReportPaths": [
+    "artifacts/manual-gated/notebooklm/live-execution-stub/redaction-report.stdout.json",
+    "artifacts/manual-gated/notebooklm/live-execution-stub/redaction-report.stderr.json"
+  ],
+  "errors": [{"code":"NOTEBOOKLM_LIVE_EXECUTION_STUBBED","message":"The final live-execution gate is present, but this stub still does not execute NotebookLM. It proves transcript routing through redaction.","blocking":false,"details":{"nextLane":"replace stubbed transcript generation with one-command live execution after explicit approval"}}],
+  "authority": {
+    "mayCreateClaims": false,
+    "mayAuthorizeImplementation": false,
+    "requiresLocalPromotion": true,
+    "providerOutputOnly": true
+  }
+}
