@@ -1,0 +1,4 @@
+NOTEBOOKLM GUARDED LIVE RUNNER
+status=gate_missing
+liveNotebookLMExecuted=false
+No NotebookLM command was executed.

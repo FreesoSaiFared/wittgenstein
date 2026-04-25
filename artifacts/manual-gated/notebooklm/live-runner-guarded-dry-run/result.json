@@ -1,0 +1,58 @@
+{
+  "authority": {
+    "mayAuthorizeImplementation": false,
+    "mayCreateClaims": false,
+    "providerOutputOnly": true,
+    "requiresLocalPromotion": true
+  },
+  "command": "notebooklm list",
+  "commandsExecuted": [],
+  "errors": [
+    {
+      "blocking": true,
+      "code": "NOTEBOOKLM_MANUAL_GATE_MISSING",
+      "details": {},
+      "message": "Manual NotebookLM gate is missing or invalid."
+    }
+  ],
+  "gate": {
+    "errors": [
+      {
+        "blocking": true,
+        "code": "NOTEBOOKLM_MANUAL_GATE_MISSING",
+        "details": {},
+        "message": "Manual NotebookLM gate is missing or invalid."
+      }
+    ],
+    "liveEnablePresent": false,
+    "manualGatePresent": false,
+    "mayExecute": false,
+    "notebooklmHome": "",
+    "notebooklmHomePresent": false,
+    "ok": false,
+    "operation": "readonly-list",
+    "readonlyEnablePresent": false,
+    "status": "gate_missing",
+    "subprocessEnablePresent": false
+  },
+  "liveNotebookLMExecuted": false,
+  "mode": "live_runner_guarded",
+  "ok": false,
+  "provider": "notebooklm",
+  "rawTranscriptPaths": [
+    "artifacts/manual-gated/notebooklm/live-runner-guarded-dry-run/transcript.stdout.raw.txt",
+    "artifacts/manual-gated/notebooklm/live-runner-guarded-dry-run/transcript.stderr.raw.txt"
+  ],
+  "redactedTranscriptPaths": [
+    "artifacts/manual-gated/notebooklm/live-runner-guarded-dry-run/transcript.stdout.redacted.txt",
+    "artifacts/manual-gated/notebooklm/live-runner-guarded-dry-run/transcript.stderr.redacted.txt"
+  ],
+  "redactionReportPaths": [
+    "artifacts/manual-gated/notebooklm/live-runner-guarded-dry-run/redaction-report.stdout.json",
+    "artifacts/manual-gated/notebooklm/live-runner-guarded-dry-run/redaction-report.stderr.json"
+  ],
+  "requestedOperation": "readonly-list",
+  "returncode": null,
+  "schemaVersion": "notebooklm-live-runner-result-v0",
+  "status": "gate_missing"
+}

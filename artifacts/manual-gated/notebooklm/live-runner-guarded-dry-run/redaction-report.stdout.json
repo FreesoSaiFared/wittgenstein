@@ -1,0 +1,15 @@
+{
+  "authority": {
+    "mayAuthorizeImplementation": false,
+    "mayCreateClaims": false,
+    "providerOutputOnly": true,
+    "requiresLocalPromotion": true
+  },
+  "changed": false,
+  "inputSha256": "7a30638e77ca0f86836095256140cf1478d5680ca68c25de7601f42b69e43f05",
+  "liveNotebookLMExecuted": false,
+  "outputSha256": "7a30638e77ca0f86836095256140cf1478d5680ca68c25de7601f42b69e43f05",
+  "redactions": [],
+  "schemaVersion": "notebooklm-redaction-report-v0",
+  "totalRedactions": 0
+}
