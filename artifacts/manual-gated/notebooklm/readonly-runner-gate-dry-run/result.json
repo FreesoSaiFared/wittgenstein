@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "notebooklm-readonly-runner-gate-v0",
+  "provider": "notebooklm",
+  "mode": "readonly_runner_gate",
+  "status": "readonly_enabled_not_executed",
+  "ok": true,
+  "experimentId": "readonly-runner-gate-dry-run",
+  "requestedOperation": "readonly-list",
+  "futureCommand": "notebooklm list",
+  "manualGatePresent": true,
+  "notebooklmHomePresent": true,
+  "readonlyEnablePresent": true,
+  "liveNotebookLMExecuted": false,
+  "commandsExecuted": [],
+  "errors": [{"code":"NOTEBOOKLM_LIVE_EXECUTION_NOT_IMPLEMENTED","message":"readonly-list gate is satisfied, but this lane still does not execute NotebookLM.","blocking":false,"details":{"nextLane":"implement one-command live runner behind this gate"}}],
+  "authority": {
+    "mayCreateClaims": false,
+    "mayAuthorizeImplementation": false,
+    "requiresLocalPromotion": true,
+    "providerOutputOnly": true
+  }
+}
