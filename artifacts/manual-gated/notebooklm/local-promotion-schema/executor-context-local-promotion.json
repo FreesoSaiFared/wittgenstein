@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "notebooklm-local-promotion-v0",
+  "provider": "notebooklm",
+  "sourceProviderResultContractVersion": "notebooklm-provider-result-v0",
+  "sourceProviderResultPath": "artifacts/manual-gated/notebooklm/provider-result-conversion-fixture/provider-result.json",
+  "allowedTargets": ["executor_context"],
+  "allowsPatchAuthority": false,
+  "localVerification": {
+    "status": "verified",
+    "method": "synthetic fixture shape verified locally; no live NotebookLM evidence involved",
+    "verifiedBy": "local-test-fixture",
+    "notes": [
+      "This fixture demonstrates executor-context promotion shape only.",
+      "It does not grant patch authority.",
+      "It does not create implementation authority."
+    ]
+  },
+  "authority": {
+    "mayCreateClaims": false,
+    "mayAuthorizeImplementation": false,
+    "mayAuthorizePatch": false,
+    "providerOutputOnly": true,
+    "requiresLocalPromotion": false
+  }
+}
