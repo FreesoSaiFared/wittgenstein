@@ -34,6 +34,14 @@ class NotebookLMPromotionPolicyTests(unittest.TestCase):
             "localVerification": {
                 "status": "verified",
                 "method": "synthetic fixture shape only",
+                "verifiedBy": "unit-test",
+            },
+            "authority": {
+                "mayCreateClaims": False,
+                "mayAuthorizeImplementation": False,
+                "mayAuthorizePatch": False,
+                "providerOutputOnly": True,
+                "requiresLocalPromotion": False,
             },
         }
 
@@ -71,6 +79,7 @@ class NotebookLMPromotionPolicyTests(unittest.TestCase):
         self.assertTrue(executor_decision["ok"])
         self.assertTrue(executor_decision["canEnterExecutorContext"])
         self.assertFalse(executor_decision["canAuthorizePatch"])
+        self.assertTrue(executor_decision["localPromotionValidation"]["ok"])
 
         self.assertFalse(patch_decision["ok"])
         self.assertFalse(patch_decision["canAuthorizePatch"])
@@ -78,7 +87,7 @@ class NotebookLMPromotionPolicyTests(unittest.TestCase):
 
     def test_unverified_local_promotion_fails_closed(self) -> None:
         promotion = self.valid_promotion()
-        promotion["localVerification"] = {"status": "claimed"}
+        promotion["localVerification"] = {"status": "claimed", "method": "not enough", "verifiedBy": "unit-test"}
 
         decision = evaluate_notebooklm_provider_promotion(
             self.provider_result(),
@@ -88,7 +97,11 @@ class NotebookLMPromotionPolicyTests(unittest.TestCase):
 
         self.assertFalse(decision["ok"])
         self.assertFalse(decision["canEnterExecutorContext"])
-        self.assertEqual(decision["errors"][0]["code"], "NOTEBOOKLM_LOCAL_VERIFICATION_REQUIRED")
+        self.assertEqual(decision["errors"][0]["code"], "NOTEBOOKLM_LOCAL_PROMOTION_SCHEMA_INVALID")
+        self.assertEqual(
+            decision["localPromotionValidation"]["errors"][0]["code"],
+            "NOTEBOOKLM_LOCAL_VERIFICATION_REQUIRED",
+        )
 
 
 if __name__ == "__main__":

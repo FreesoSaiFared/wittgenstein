@@ -1,0 +1,41 @@
+{
+  "allowedTargets": [
+    "executor_context"
+  ],
+  "allowsPatchAuthority": true,
+  "errors": [
+    {
+      "blocking": true,
+      "code": "NOTEBOOKLM_LOCAL_PROMOTION_TARGET_INVALID",
+      "details": {
+        "allowedTargets": [
+          "executor_context",
+          "planner_context"
+        ],
+        "target": "patch_authority"
+      },
+      "message": "Local promotion artifact contains an unsupported target."
+    },
+    {
+      "blocking": true,
+      "code": "NOTEBOOKLM_LOCAL_PROMOTION_PATCH_AUTHORITY_FORBIDDEN",
+      "details": {
+        "allowsPatchAuthority": true
+      },
+      "message": "NotebookLM local promotion v0 must not grant patch authority."
+    },
+    {
+      "blocking": true,
+      "code": "NOTEBOOKLM_LOCAL_PROMOTION_AUTHORITY_INVALID",
+      "details": {
+        "actual": true,
+        "expected": false,
+        "field": "mayAuthorizePatch"
+      },
+      "message": "Local promotion authority boundary is too broad or malformed."
+    }
+  ],
+  "ok": false,
+  "provider": "notebooklm",
+  "schemaVersion": "notebooklm-local-promotion-validation-v0"
+}

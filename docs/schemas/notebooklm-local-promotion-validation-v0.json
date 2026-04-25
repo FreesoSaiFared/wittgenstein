@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wittgenstein.local/schemas/notebooklm-local-promotion-validation-v0.json",
+  "title": "NotebookLM Local Promotion Validation v0",
+  "type": "object",
+  "required": ["schemaVersion", "provider", "ok", "allowedTargets", "allowsPatchAuthority", "errors"],
+  "properties": {
+    "schemaVersion": { "const": "notebooklm-local-promotion-validation-v0" },
+    "provider": { "const": "notebooklm" },
+    "ok": { "type": "boolean" },
+    "allowedTargets": { "type": "array", "items": { "type": "string" } },
+    "allowsPatchAuthority": { "type": ["boolean", "null"] },
+    "errors": { "type": "array" }
+  },
+  "additionalProperties": true
+}
