@@ -1,0 +1,7 @@
+NOTEBOOKLM LIVE EXECUTION STUB
+status=stubbed_transcript_redacted
+wouldExecute=notebooklm list
+liveNotebookLMExecuted=false
+Authorization: [REDACTED_TOKEN] [REDACTED_BEARER_TOKEN]
+Cookie: [REDACTED_COOKIE_HEADER]
+NotebookLM can inform; local artifacts decide.
