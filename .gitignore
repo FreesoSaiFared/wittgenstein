@@ -60,3 +60,13 @@ polyglot-mini/**/*.pyc
 
 # Optional: large trained weights (uncomment if you do not want npz in repo)
 # polyglot-mini/train/adapter.npz
+
+# Wittgenstein / NotebookLM manual-gated capture hygiene
+# Raw provider transcripts must not be committed. Store only redacted transcripts,
+# redaction reports, command metadata, and result manifests unless a future DEC
+# explicitly promotes a sanitized fixture.
+artifacts/manual-gated/notebooklm/**/transcript.*.raw.txt
+artifacts/manual-gated/notebooklm/**/raw-provider-output.txt
+artifacts/manual-gated/notebooklm/**/cookies*.txt
+artifacts/manual-gated/notebooklm/**/storage_state.json
+artifacts/manual-gated/notebooklm/**/.notebooklm/
