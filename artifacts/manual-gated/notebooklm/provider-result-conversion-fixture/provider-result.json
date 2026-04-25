@@ -1,0 +1,33 @@
+{
+  "authority": {
+    "mayAuthorizeImplementation": false,
+    "mayCreateClaims": false,
+    "providerOutputOnly": true,
+    "requiresLocalPromotion": true
+  },
+  "capture": {
+    "capturedAt": null,
+    "fixtureKind": "synthetic_fixture",
+    "fixtureSource": "local_test_fixture",
+    "metadataPath": "artifacts/manual-gated/notebooklm/captured-result-fixture/redaction-report.stdout.json",
+    "mode": "manual_export",
+    "notebookId": null,
+    "notebookTitle": "synthetic captured-result fixture",
+    "operation": "readonly-list",
+    "rawTextPath": null,
+    "redactedTextPath": "artifacts/manual-gated/notebooklm/captured-result-fixture/transcript.stdout.redacted.txt"
+  },
+  "contractVersion": "notebooklm-provider-result-v0",
+  "errors": [],
+  "ok": true,
+  "preflight": {
+    "commandsExecuted": [],
+    "fixtureSchemaVersion": "notebooklm-captured-result-fixture-v0",
+    "liveNotebookLMExecuted": false,
+    "source": "captured_result_fixture"
+  },
+  "provider": "notebooklm",
+  "requestId": "provider-result-conversion-fixture-request",
+  "runId": "provider-result-conversion-fixture",
+  "status": "captured"
+}
