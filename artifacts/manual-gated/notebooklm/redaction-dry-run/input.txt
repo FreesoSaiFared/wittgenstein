@@ -1,0 +1,5 @@
+Authorization: Bearer abcdefghijklmnopqrstuvwxyz1234567890
+Cookie: SID=secret_sid_value; __Secure-1PSID=secret_secure_cookie; theme=ok
+access_token=ya29.this_should_not_survive
+https://example.invalid/callback?code=oauth-code-value&x=1
+NotebookLM can inform; local artifacts decide.
