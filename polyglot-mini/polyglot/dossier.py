@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 import ast
-import importlib.metadata
-import importlib.util
 import json
 import os
 import re
@@ -15,6 +13,8 @@ from fnmatch import fnmatch
 from hashlib import sha256
 from pathlib import Path
 from typing import Iterable
+
+from .notebooklm_provider import preflight_notebooklm_provider
 
 TEXT_EXTENSIONS = {
     ".md",
@@ -775,6 +775,12 @@ def _render_provider_output(
             lines.append(
                 f"- `{claim['claimId']}` [{claim['authorityClass']}/{claim['status']}] {claim['text']}"
             )
+    errors = provider_metadata.get("errors", [])
+    if errors:
+        lines.append("")
+        lines.append("## Preflight errors")
+        for error in errors:
+            lines.append(f"- `{error['code']}` {error['message']}")
     lines.append("")
     return "\n".join(lines)
 
@@ -934,6 +940,13 @@ def _provider_error(provider_metadata: dict) -> DossierError | None:
     if provider == "local" and provider_metadata["status"] == "available":
         return None
     if provider == "notebooklm":
+        status = provider_metadata.get("status")
+        if status == "not_ready":
+            return DossierError(
+                "PROVIDER_NOT_READY",
+                "NotebookLM provider preflight detected tooling, but the adapter is not ready.",
+                details=provider_metadata,
+            )
         return DossierError(
             "PROVIDER_UNAVAILABLE",
             "NotebookLM provider is recognized but unavailable in this environment.",
@@ -947,72 +960,7 @@ def _provider_error(provider_metadata: dict) -> DossierError | None:
 
 
 def _detect_notebooklm_environment() -> dict:
-    module_checks = []
-    for module_name in ("notebooklm", "notebooklm_py"):
-        try:
-            spec = importlib.util.find_spec(module_name)
-            module_checks.append(
-                {
-                    "module": module_name,
-                    "available": spec is not None,
-                    "origin": getattr(spec, "origin", None) if spec else None,
-                }
-            )
-        except Exception as exc:
-            module_checks.append(
-                {
-                    "module": module_name,
-                    "available": False,
-                    "error": f"{type(exc).__name__}: {exc}",
-                }
-            )
-
-    matching_distributions = []
-    for distribution in importlib.metadata.distributions():
-        name = distribution.metadata.get("Name", "")
-        if "notebooklm" not in name.lower():
-            continue
-        entry_points = sorted(entry_point.name for entry_point in distribution.entry_points)
-        matching_distributions.append(
-            {
-                "name": name,
-                "version": distribution.version,
-                "summary": distribution.metadata.get("Summary"),
-                "location": str(distribution.locate_file("")),
-                "entryPoints": entry_points,
-            }
-        )
-
-    cli_candidates = []
-    safe_smoke_command = None
-    for cli_name in ("notebooklm", "notebooklm-py"):
-        cli_path = shutil.which(cli_name)
-        if not cli_path:
-            continue
-        cli_candidate = {"name": cli_name, "path": cli_path}
-        cli_candidates.append(cli_candidate)
-        if safe_smoke_command is None:
-            safe_smoke_command = f"{cli_name} --help"
-
-    status = "unavailable"
-    reason = "No supported notebooklm-py environment detected."
-    if matching_distributions or any(check["available"] for check in module_checks) or cli_candidates:
-        status = "unclear"
-        reason = (
-            "NotebookLM-related tooling was partially detected, but dossier-core has no verified "
-            "non-network invocation path yet."
-        )
-
-    return {
-        "provider": "notebooklm",
-        "status": status,
-        "mode": "provider_seam",
-        "reason": reason,
-        "safeSmokeCommand": safe_smoke_command,
-        "moduleChecks": module_checks,
-        "matchingDistributions": matching_distributions,
-        "cliCandidates": cli_candidates,
-    }
+    return preflight_notebooklm_provider()
 
 
 def _detect_notebooklm_provider() -> dict:
