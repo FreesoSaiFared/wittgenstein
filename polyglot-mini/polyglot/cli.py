@@ -1,4 +1,4 @@
-"""CLI entry — python -m polyglot image|sensor|tts "prompt" --out path"""
+"""CLI entry — python -m polyglot image|sensor|tts|dossier ..."""
 from __future__ import annotations
 import argparse
 import json
@@ -35,10 +35,27 @@ def main() -> int:
                        help="Ambient layer: auto|none|rain|wind|forest|city|electronic")
     p_tts.add_argument("--ambient-vol", type=float, default=None)
 
+    p_dossier = sub.add_parser("dossier")
+    p_dossier.add_argument("prompt")
+    p_dossier.add_argument("--provider", default="local")
+    p_dossier.add_argument("--sources", nargs="+", required=True)
+    p_dossier.add_argument("--out", default="artifacts/context/executor-context.md")
+    p_dossier.add_argument("--max-files", type=int, default=8)
+
+    p_replay = sub.add_parser("dossier-replay")
+    p_replay.add_argument("run_dir")
+    p_replay.add_argument("--out", default=None)
+
+    p_verify = sub.add_parser("verify-patch-authority")
+    p_verify.add_argument("run_dir")
+    p_verify.add_argument("--patch-ledger", default=None)
+    p_verify.add_argument("--repo-root", default=None)
+
     args = ap.parse_args()
 
     import os
-    os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
+    if getattr(args, "out", None):
+        os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
 
     if args.cmd == "image":
         if args.no_llm:
@@ -59,6 +76,18 @@ def main() -> int:
                                  rate_wpm=args.rate, use_llm_script=not args.raw,
                                  ambient=args.ambient,
                                  ambient_vol=args.ambient_vol)
+    elif args.cmd == "dossier":
+        from .dossier import generate_dossier
+        result = generate_dossier(args.prompt, provider=args.provider, sources=args.sources,
+                                  out_path=args.out, max_files=args.max_files)
+    elif args.cmd == "dossier-replay":
+        from .dossier import replay_dossier
+        result = replay_dossier(args.run_dir, out_path=args.out)
+    elif args.cmd == "verify-patch-authority":
+        from .dossier import verify_patch_authority
+        result = verify_patch_authority(run_dir=args.run_dir,
+                                        patch_ledger_path=args.patch_ledger,
+                                        repository_root=args.repo_root)
     else:
         ap.error(f"unknown cmd {args.cmd}")
 
