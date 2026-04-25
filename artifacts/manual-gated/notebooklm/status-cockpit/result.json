@@ -1,0 +1,23 @@
+{
+  "allLocalVerifierResult": "/tmp/witt-notebooklm-cockpit-verifier.2elOWI/all-local-verifier/result.json",
+  "allLocalVerifierStderr": "/tmp/witt-notebooklm-cockpit-verifier.2elOWI/all-local-verifier.stderr.txt",
+  "allLocalVerifierStdout": "/tmp/witt-notebooklm-cockpit-verifier.2elOWI/all-local-verifier.stdout.txt",
+  "authority": {
+    "mayAuthorizeImplementation": false,
+    "mayCreateClaims": false,
+    "providerOutputOnly": true,
+    "requiresLocalPromotion": true
+  },
+  "commandsExecuted": [],
+  "latestCommit": "8e3bfba Merge pull request #27 from FreesoSaiFared/feat/nblm/notebooklm-lane-index",
+  "liveNotebookLMExecuted": false,
+  "mode": "status_cockpit",
+  "notebooklmArtifactJsonCount": 22,
+  "notebooklmSchemaCount": 10,
+  "notebooklmTestCount": 9,
+  "ok": true,
+  "provider": "notebooklm",
+  "schemaVersion": "notebooklm-status-cockpit-result-v0",
+  "status": "green",
+  "trackedRawNotebookLMArtifactCount": 0
+}
