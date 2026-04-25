@@ -6,8 +6,12 @@ versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-Doctrine lock for v0.2. No code changes; this cut is the **paper trail**
-that the next phase (P6 — codec-v2 port, M0→M5b) executes against.
+## [0.2.0-alpha.1] — 2026-04-25 — v0.2 doctrine lock (pre-launch)
+
+Doctrine lock for v0.2. **No code changes** — this cut is the paper
+trail that the next phase (P6 — codec-v2 port, M0→M5b) executes
+against. Tagged as a pre-launch so contributors can reference a stable
+SHA for the doctrine surface while M0/M1 work begins on top of it.
 
 ### Added — Foundational
 - `docs/THESIS.md` — smallest locked statement of the project
@@ -81,6 +85,9 @@ that the next phase (P6 — codec-v2 port, M0→M5b) executes against.
   changelog compare links updated accordingly
 - `.github/dependabot.yml` — github-actions updates grouped to reduce
   PR noise
+- `.github/workflows/release.yml` — tag-driven GitHub Release with
+  CHANGELOG-section body; `-alpha`/`-beta`/`-rc`/`-pre` versions
+  auto-marked as prerelease
 
 ## [0.1.0-alpha.2] — 2026-04-20 — Early-adopter polish
 
@@ -185,6 +192,7 @@ video renderer remain intentionally incomplete.
 - Every run writes a manifest under `artifacts/runs/<id>/`
 - Shared contracts live in `@wittgenstein/schemas`; codec packages depend on schemas, not each other
 
-[Unreleased]: https://github.com/wittgenstein-cli/wittgenstein/compare/v0.1.0-alpha.2...HEAD
+[Unreleased]: https://github.com/wittgenstein-cli/wittgenstein/compare/v0.2.0-alpha.1...HEAD
+[0.2.0-alpha.1]: https://github.com/wittgenstein-cli/wittgenstein/compare/v0.1.0-alpha.2...v0.2.0-alpha.1
 [0.1.0-alpha.2]: https://github.com/wittgenstein-cli/wittgenstein/compare/v0.1.0-alpha.1...v0.1.0-alpha.2
 [0.1.0-alpha.1]: https://github.com/wittgenstein-cli/wittgenstein/releases/tag/v0.1.0-alpha.1
