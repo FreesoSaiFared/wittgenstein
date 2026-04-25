@@ -1,0 +1,32 @@
+{
+  "authority": {
+    "mayAuthorizeImplementation": false,
+    "mayCreateClaims": false,
+    "providerOutputOnly": true,
+    "requiresLocalPromotion": true
+  },
+  "changed": true,
+  "inputSha256": "3ddb6e2c524ccb812ddb55242ba3f3da737635e455ee8649334b0dcba7d3429d",
+  "liveNotebookLMExecuted": false,
+  "outputSha256": "851fc8fa05bf06be26ea0671d244ab678662470a0886d71ce8e6117b3a61c018",
+  "redactions": [
+    {
+      "count": 1,
+      "type": "HTTP_AUTHORIZATION_BEARER"
+    },
+    {
+      "count": 1,
+      "type": "COOKIE_HEADER"
+    },
+    {
+      "count": 2,
+      "type": "JSON_OR_ENV_TOKEN_FIELD"
+    },
+    {
+      "count": 1,
+      "type": "URL_SECRET_PARAMETER"
+    }
+  ],
+  "schemaVersion": "notebooklm-redaction-report-v0",
+  "totalRedactions": 5
+}

@@ -1,0 +1,5 @@
+Authorization: [REDACTED_TOKEN] [REDACTED_BEARER_TOKEN]
+Cookie: [REDACTED_COOKIE_HEADER]
+access_token=[REDACTED_TOKEN]
+https://example.invalid/callback?code=[REDACTED_URL_SECRET]&x=1
+NotebookLM can inform; local artifacts decide.
