@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "notebooklm-redaction-report-v0",
+  "inputSha256": "fixture-input-not-live",
+  "outputSha256": "fixture-output-not-live",
+  "changed": false,
+  "totalRedactions": 0,
+  "redactions": [],
+  "liveNotebookLMExecuted": false,
+  "authority": {
+    "mayCreateClaims": false,
+    "mayAuthorizeImplementation": false,
+    "requiresLocalPromotion": true,
+    "providerOutputOnly": true
+  }
+}
