@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "notebooklm-manual-capture-runner-result-v0",
+  "provider": "notebooklm",
+  "mode": "runner_skeleton",
+  "status": "plan_only",
+  "ok": true,
+  "experimentId": "manual-capture-runner-dry-run",
+  "requestedOperation": "plan-only",
+  "manualGatePresent": true,
+  "notebooklmHomePresent": true,
+  "liveNotebookLMExecuted": false,
+  "commandsExecuted": [],
+  "errors": [],
+  "authority": {
+    "mayCreateClaims": false,
+    "mayAuthorizeImplementation": false,
+    "requiresLocalPromotion": true,
+    "providerOutputOnly": true
+  }
+}
