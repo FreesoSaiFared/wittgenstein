@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wittgenstein.local/schemas/notebooklm-local-promotion-v0.json",
+  "title": "NotebookLM Local Promotion v0",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "provider",
+    "sourceProviderResultContractVersion",
+    "allowedTargets",
+    "allowsPatchAuthority",
+    "localVerification",
+    "authority"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "notebooklm-local-promotion-v0" },
+    "provider": { "const": "notebooklm" },
+    "sourceProviderResultContractVersion": { "const": "notebooklm-provider-result-v0" },
+    "sourceProviderResultPath": { "type": "string" },
+    "allowedTargets": {
+      "type": "array",
+      "items": { "enum": ["executor_context", "planner_context"] },
+      "uniqueItems": true
+    },
+    "allowsPatchAuthority": { "type": "boolean", "const": false },
+    "localVerification": {
+      "type": "object",
+      "required": ["status", "method", "verifiedBy"],
+      "properties": {
+        "status": { "const": "verified" },
+        "method": { "type": "string", "minLength": 1 },
+        "verifiedBy": { "type": "string", "minLength": 1 },
+        "notes": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": true
+    },
+    "authority": {
+      "type": "object",
+      "required": [
+        "mayCreateClaims",
+        "mayAuthorizeImplementation",
+        "mayAuthorizePatch",
+        "providerOutputOnly",
+        "requiresLocalPromotion"
+      ],
+      "properties": {
+        "mayCreateClaims": { "type": "boolean", "const": false },
+        "mayAuthorizeImplementation": { "type": "boolean", "const": false },
+        "mayAuthorizePatch": { "type": "boolean", "const": false },
+        "providerOutputOnly": { "type": "boolean", "const": true },
+        "requiresLocalPromotion": { "type": "boolean", "const": false }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}
