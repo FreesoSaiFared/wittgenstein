@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "notebooklm-readonly-probe-spec-v0",
+  "provider": "notebooklm",
+  "mode": "spec_only",
+  "operation": "readonly-list",
+  "futureCommand": "notebooklm list",
+  "approvedNow": false,
+  "liveNotebookLMExecuted": false,
+  "manualGateRequired": true,
+  "manualGatePresent": false,
+  "notebooklmHomePresent": false,
+  "futureGate": {
+    "WITT_NOTEBOOKLM_MANUAL_GATE": "I_UNDERSTAND_THIS_TOUCHES_REAL_NOTEBOOKLM",
+    "WITT_NOTEBOOKLM_OPERATION": "readonly-list",
+    "WITT_NOTEBOOKLM_EXPERIMENT_ID": "manual-auth-capture-YYYYMMDD-HHMMSS",
+    "NOTEBOOKLM_HOME": "/tmp/witt-notebooklm-manual-capture-home"
+  },
+  "forbiddenNow": [
+    "notebooklm login",
+    "notebooklm list",
+    "notebooklm ask",
+    "notebooklm create",
+    "notebooklm delete",
+    "source upload",
+    "artifact generation",
+    "browser automation",
+    "NotebookLMClient.from_storage live call"
+  ],
+  "futureArtifacts": [
+    "request.json",
+    "preflight.json",
+    "command.txt",
+    "transcript.stdout.txt",
+    "transcript.stderr.txt",
+    "exit-code.txt",
+    "redaction-report.json",
+    "result.json",
+    "README.md"
+  ],
+  "authority": {
+    "mayCreateClaims": false,
+    "mayAuthorizeImplementation": false,
+    "requiresLocalPromotion": true,
+    "providerOutputOnly": true
+  }
+}
