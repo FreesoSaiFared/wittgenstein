@@ -1,9 +1,11 @@
 # Brief C — Unproven-but-interesting horizon scan
 
-**Date:** 2026-04-23
-**Status:** Draft v0.1
+**Date:** 2026-04-23 (v0.1) · amended 2026-04-26 (v0.2 — added H9, H10)
+**Status:** Draft v0.2
 **Author:** research pass, max.zhuang.yan@gmail.com
-**One-line summary:** Eight load-bearing hypotheses that are neither settled science (Brief A) nor live theoretical tension (Brief B) but, if they resolve the way we suspect, each flips one decision in Wittgenstein's 18-month roadmap — we name them, price them, and mark which ones to bet on now.
+**One-line summary:** Ten load-bearing hypotheses that are neither settled science (Brief A) nor live theoretical tension (Brief B) but, if they resolve the way we suspect, each flips one decision in Wittgenstein's 18-month roadmap — we name them, price them, and mark which ones to bet on now.
+
+> **v0.2 amendment scope.** Two horizon hypotheses surfaced from a 2026-04-26 conversation pass — H9 (patch-grid / next-scale IR) and H10 (long-code clarity via test-time caption expansion). Both grew out of the user's "ViT global-relations" and "short-code → long-code compiler" framings; both are operational (each names a specific live experiment hook in RFC-0001 / Brief E) so they belong in this scan rather than Brief A or B. v0.1 hypotheses H1–H8 are unchanged. See cross-link in Brief A's lineage refresh (separate PR).
 
 > **v0.2 scope note:** this brief is roadmap input, not a v0.2 gate. Its hypotheses inform v0.3+ sequencing; they do not block the v0.2 doctrine lock.
 
@@ -11,11 +13,11 @@
 
 ## Scope and ground rules
 
-This brief scans the "unvalidated but actionable" horizon: claims with enough signal in the 2024–2026 literature and practice that they deserve a confidence number above noise, but not so much that they belong in the settled-lineage brief. Each of the eight hypotheses below gets a fixed shape — (a) one-sentence claim, (b) one best-supporting pointer, (c) one disconfirming pointer, (d) implication for Wittgenstein if true, (e) a confidence drawn from the discrete set **{0.1, 0.3, 0.6}** — strictly no 0.9 (Brief A/B territory) and no hand-waving intermediate values — and (f) a "what would flip this" trigger. Every hypothesis is operational: it must bear on a file, adapter, ADR, or roadmap item. Purely philosophical conjectures (e.g. "symbol grounding is solved") are excluded. Where supporting or disconfirming evidence is genuinely thin, we say so and drop confidence rather than invent a number.
+This brief scans the "unvalidated but actionable" horizon: claims with enough signal in the 2024–2026 literature and practice that they deserve a confidence number above noise, but not so much that they belong in the settled-lineage brief. Each of the ten hypotheses below gets a fixed shape — (a) one-sentence claim, (b) one best-supporting pointer, (c) one disconfirming pointer, (d) implication for Wittgenstein if true, (e) a confidence drawn from the discrete set **{0.1, 0.3, 0.6}** — strictly no 0.9 (Brief A/B territory) and no hand-waving intermediate values — and (f) a "what would flip this" trigger. Every hypothesis is operational: it must bear on a file, adapter, ADR, or roadmap item. Purely philosophical conjectures (e.g. "symbol grounding is solved") are excluded. Where supporting or disconfirming evidence is genuinely thin, we say so and drop confidence rather than invent a number.
 
 ---
 
-## The eight hypotheses
+## The ten hypotheses
 
 ### H1. Modality separability
 
@@ -97,11 +99,31 @@ This brief scans the "unvalidated but actionable" horizon: claims with enough si
 - **Confidence:** **0.6** on "unified tokenization will be the paradigm by late 2027"; **0.3** on "the unified scheme will look like what we'd guess today." We list this as 0.6 because the roadmap question is "is this a direction?", not "which variant wins?"
 - **What would flip this.** A unified-tokenizer model beats task-specialized models on _both_ MMMU (understanding) and MJHQ-30K (generation) at comparable parameter count (↑ to 0.8). Two years of unified-tokenizer papers underperforming separate tokenizers at matched FLOPs (↓ to 0.3).
 
+### H9. Patch-grid / next-scale IR beats structured-JSON IR for raster modalities
+
+**Claim.** For raster image (and by extension video frame) generation, the right intermediate representation between LLM and decoder is _not_ a structured-JSON SceneSpec but a sequence of patch tokens or coarse-to-fine scale tokens — i.e. the ViT lesson ("flatten the image into a sequence; let attention discover global relations") and the VAR lesson ("predict scale-by-scale, not raster-scan") together imply Wittgenstein's current SceneSpec IR is correctly grippable for v0.1 but wrong for v0.3+ image quality.
+
+- **Supporting:** VAR (Tian et al., NeurIPS 2024 Best Paper, [arXiv 2404.02905](https://arxiv.org/abs/2404.02905)) reports next-scale prediction taking ImageNet 256² FID from 18.65 → 1.73 versus a raster-order AR baseline, ~20× faster than diffusion, with clean power-law scaling — the first AR image result that matches diffusion on fidelity without changing the loss function. Emu3 ([arXiv 2409.18869](https://arxiv.org/abs/2409.18869)) does pure next-token prediction over ~4096 SBER-MoVQGAN patch tokens per image and beats SDXL. FlexTok (Bachmann et al., ICML 2025, [arXiv 2502.13967](https://arxiv.org/abs/2502.13967)) shows 1-D patch sequences of flexible length (1 to 256 tokens) reach FID < 2 across 8–128 tokens with a rectified-flow decoder and nested-dropout training — the patch-token IR is no longer fixed-length-rigid.
+- **Disconfirming:** The current Wittgenstein image artifact is a single PNG with a SceneSpec sidecar; reviewers can read it. SVGenius / SGP-Bench (cited in H4) show structured-program IR holds for medium-complexity vector modalities. SPAE (Brief A) is direct prior art that frozen LLMs can already emit _word-vocabulary_ patch tokens without any architectural change — so the "patch IR" win, if it lands, may not require us to abandon the JSON shape, only to admit a parallel patch-grid IR alongside it.
+- **Implication if true.** RFC-0001's IR sum (`text | latent | hybrid`) gains a fourth variant `patch-grid` (or scale-coarse-to-fine), and the image codec adds a route that calls a VAR-class / FlexTok-class frozen decoder directly with adapter-projected patch tokens. SceneSpec stays as the grippable-JSON route for showcase / debugging; the patch-grid route is what we ship for fidelity. The L4/L5 split (decoder vs renderer) becomes more important, not less, because patch tokens are the L4 artifact a separate L5 pixel decoder consumes.
+- **Confidence:** **0.3** — VAR is one strong data point, FlexTok is a second, Emu3 is a third, but all three require a frozen decoder we do not yet have a usable-license version of (this is exactly Brief A kill criterion #3). Calling this 0.6 would over-fit to three papers from the same research direction.
+- **What would flip this.** An open-weights VAR-class or FlexTok-class decoder ships under a usable license by Q4 2026 and reproduces the published FID on a free-tier T4 (↑ to 0.6) — at that point we should branch the IR. Conversely, if our SceneSpec → procedural raster pipeline beats VAR on prompt adherence (CLIPScore / VQAScore from Brief E) at matched compute on DPG-Bench prompts, the structured-IR route is sufficient and we should not bifurcate the IR (↓ to 0.1).
+
+### H10. Long-code clarity — test-time caption expansion beats short-prompt directness
+
+**Claim.** Letting the LLM emit a much longer structured "render program" (≈5% of context tokens, hundreds-to-thousand words of structured caption) and then rule-expanding it deterministically into a thousands-token decoder input produces higher artifact fidelity than letting the LLM emit a short prompt directly to a decoder — i.e. the "short code → long code → output" compiler chain (cf. demoscene 4KB intros, GLSL noise functions, procedural texture generators) is the right pipeline shape for image and audio, and Wittgenstein's current 3-stage `expand → adapt → decode` chain is already this pattern but currently under-using its expand stage.
+
+- **Supporting:** FIBO ([arXiv 2511.06876](https://arxiv.org/abs/2511.06876), Nov 2025) reports SOTA prompt adherence on long-prompt benchmarks by training the model to consume 1000-word structured captions rather than short user intents — the explicit pre-expansion is what unlocks the gain. TIPO ([arXiv 2411.08127](https://arxiv.org/abs/2411.08127)) shows text-to-image prompt optimization via lightweight LLM expansion lifts adherence on standard benchmarks at marginal extra cost. "Progress by Pieces" ([arXiv 2511.21185](https://arxiv.org/abs/2511.21185), Nov 2025) demonstrates test-time scaling for AR image generation by spending more tokens at inference. Anthropic extended thinking ([anthropic docs](https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking)) ships 1024–128K-token internal reasoning budgets as a first-class API parameter — frontier labs are explicitly betting that "more tokens before answering" is a primitive worth pricing. Input-side inference-time scaling for diffusion ([arXiv 2510.12041](https://arxiv.org/abs/2510.12041)) generalises the same lever to non-AR pipelines.
+- **Disconfirming:** TiTok / TA-TiTok (H2) compress an _entire_ image to 32 tokens at competitive FID — the "more tokens means more fidelity" intuition is not monotone; representational efficiency can win over verbosity at the encoder side. GPT-4o native generation produces SOTA edits and typographic fidelity from short user prompts with no visible long-caption stage (Lambert / interconnects.ai cited under H1) — the long-code premium may be a transient quirk of training-data distribution rather than a structural property. There is also a real risk that long-caption pipelines optimise the prompt-adherence metric (CLIPScore / VQAScore) without humans actually preferring the outputs.
+- **Implication if true.** RFC-0001's pipeline gains an explicit optional `--expand` flag (or a config-level `expand: long-caption | passthrough` switch) that, when on, runs an extra LLM round to produce a FIBO-shaped long structured caption before the adapter sees it. The short-prompt path stays for receipts/showcase reproducibility; the long-caption path is what we ship for production-quality artifacts. The harness's existing 3-stage chain is exactly the right substrate — we are not redesigning the pipeline, we are putting load on its `expand` stage. ADR-0001 ("schema preamble + JSON contract") survives intact: the long caption is still schema-validated, it is just longer.
+- **Confidence:** **0.3** — FIBO and TIPO are strong supporting signals on the prompt-adherence axis; the short-prompt counter-evidence (GPT-4o, TiTok's reverse direction) is real; calling this 0.6 would treat 2025 inference-time-compute hype as settled. The H10 experiment is also one of the cheapest in this brief to actually run inside the repo (Brief E benchmarks + an `--expand` flag wired into image codec), which is the calibrated reason to keep it at 0.3 rather than push it down to 0.1 — we will collect our own data point.
+- **What would flip this.** A within-repo A/B run on DPG-Bench or MJHQ-30K showing the long-caption route beats the short-prompt route on CLIPScore / VQAScore at comparable Latency × Price × Quality (↑ to 0.6). A published 2026 result showing caption length plateaus past ~150 words across image benchmarks (↓ to 0.1). A FIBO follow-up retracting or weakening the SOTA claim under independent reproduction (↓ to 0.1).
+
 ---
 
 ## Red team
 
-A senior-staff engineer at a frontier lab reads this list and says: _"Every one of these hypotheses is in service of your bet. Where are the hypotheses that would_ kill _your bet? H1, H3, H6 all say 'adapters are enough.' H2, H4 say 'LLMs are almost done.' H5, H7 say 'distribution matters more than model quality.' H8 gives you an escape hatch. You've written a prospectus, not a scan."_
+A senior-staff engineer at a frontier lab reads this list and says: _"Every one of these hypotheses is in service of your bet. Where are the hypotheses that would_ kill _your bet? H1, H3, H6 all say 'adapters are enough.' H2, H4 say 'LLMs are almost done.' H5, H7 say 'distribution matters more than model quality.' H8 gives you an escape hatch. H9 and H10 are now also escape hatches — H9 says 'if structured-JSON IR loses, we can switch to patch grids,' H10 says 'if short prompts lose, we can spend more tokens.' You've written a prospectus, not a scan."_
 
 Fair. The honest counter-scan — hypotheses that would _kill_ Wittgenstein if they resolve unfavourably — includes:
 
@@ -117,8 +139,8 @@ The right response to the red team is not to inflate this list to 16 hypotheses 
 
 List-level, not per-hypothesis:
 
-1. **Confidence-drift kill.** If by Q2 2027 none of the three 0.6-confidence hypotheses (H1, H4, H7, H8-directional) has moved toward 0.8 — i.e. no frozen-LLM adapter stack has hit GPT-4o parity on a public benchmark, no structured-program IR has won a serious per-modality benchmark, and the Skills-style distribution convergence has fragmented back into walled gardens — the scan was optimistic. Re-do it with harder priors.
-2. **Trend-line kill.** If two of the 0.3-confidence hypotheses (H2, H3, H5, H6) have moved _down_ to 0.1 by the same date, the horizon is narrower than we thought and the 18-month roadmap should be compressed around the H1/H4/H7 spine only.
+1. **Confidence-drift kill.** If by Q2 2027 none of the four 0.6-confidence hypotheses (H1, H4, H7, H8-directional) has moved toward 0.8 — i.e. no frozen-LLM adapter stack has hit GPT-4o parity on a public benchmark, no structured-program IR has won a serious per-modality benchmark, and the Skills-style distribution convergence has fragmented back into walled gardens — the scan was optimistic. Re-do it with harder priors.
+2. **Trend-line kill.** If three of the six 0.3-confidence hypotheses (H2, H3, H5, H6, H9, H10) have moved _down_ to 0.1 by the same date, the horizon is narrower than we thought and the 18-month roadmap should be compressed around the H1/H4/H7 spine only.
 3. **Anti-correlation kill.** If GPT-5-class or Gemini-3-class native multimodal weights become open, cheap, and dominant on artifact benchmarks, every "frozen LLM + adapter" hypothesis here is at risk of being correct-but-irrelevant. That is a re-do of _the whole thesis_, not just this brief.
 
 We commit to re-running this scan in Q2 2027 regardless of which kill criterion fires.
@@ -137,6 +159,8 @@ We commit to re-running this scan in Q2 2027 regardless of which kill criterion 
 
 - **H2 — Token-efficiency collapse (0.3).** If it happens we benefit; if it stalls at 32 tokens we are fine. Do not design the IR around an assumed 8-token world.
 - **H8 — Unified tokenization for planning + rendering (0.6 directional, 0.3 specific).** Keep the IR _compatible_ with a future unified vocabulary, but do not ship the unified scheme in v0.3; RFC-0001 stays pragmatic.
+- **H9 — Patch-grid / next-scale IR (0.3, added v0.2).** Reserve the optionality but do not bifurcate the IR yet. Concretely: keep RFC-0001's IR sum extensible (the existing `latent`/`hybrid` slots already accommodate a future patch-grid variant), and do not write a VAR-class adapter until an open-weights LFQ-family decoder ships under a usable license (Brief A kill criterion #3 is the gating event). H9 graduates to "bet on now" the moment that decoder lands.
+- **H10 — Long-code clarity (0.3, added v0.2).** This is the cheapest hypothesis in this brief to actually run. The image codec already has the right pipeline shape (`expand → adapt → decode`); v0.3 should add an optional `--expand` / `expand: long-caption` switch (per RFC-0001 / Brief E benchmark wiring) and collect a within-repo A/B data point on DPG-Bench-style prompts. Do not market the long-caption pipeline as a feature until that data point exists; do build the seam now while the pipeline is still soft.
 
 **Explicitly deprioritised (track quietly):** H3, H5, H6. Each is plausible, each would be _nice_ if true, none of them should change a line of code in the next 18 months. H5 in particular is a marketing bet, not an architecture bet — revisit when we have a paying customer.
 
@@ -165,6 +189,17 @@ Signed: research-agent pass, 2026-04-23.
 - OpenAI Agents SDK skills. [openai/skills](https://github.com/openai/skills) · [developers.openai.com/blog/skills-agents-sdk](https://developers.openai.com/blog/skills-agents-sdk)
 - _Addressing Challenges in Multimodal LLM Development_, Preprints 2025. [preprints.org](https://www.preprints.org/manuscript/202512.1986/v1/download)
 
+**Added in v0.2 (H9, H10):**
+
+- Tian et al., _Visual Autoregressive Modeling: Scalable Image Generation via Next-Scale Prediction_ (VAR), NeurIPS 2024 Best Paper. [arXiv:2404.02905](https://arxiv.org/abs/2404.02905)
+- BAAI, _Emu3: Next-Token Prediction is All You Need_, 2024. [arXiv:2409.18869](https://arxiv.org/abs/2409.18869) — also cited in Brief A.
+- Bachmann et al., _FlexTok: Resampling Images into 1D Token Sequences of Flexible Length_, ICML 2025. [arXiv:2502.13967](https://arxiv.org/abs/2502.13967)
+- _FIBO: Long Structured Captions for Text-to-Image Prompt Adherence_, Nov 2025. [arXiv:2511.06876](https://arxiv.org/abs/2511.06876)
+- _TIPO: Text-to-Image Prompt Optimization via Lightweight LLM Expansion_, 2024. [arXiv:2411.08127](https://arxiv.org/abs/2411.08127)
+- _Progress by Pieces: Test-Time Scaling for Autoregressive Image Generation_, Nov 2025. [arXiv:2511.21185](https://arxiv.org/abs/2511.21185)
+- _Inference-Time Scaling for Diffusion via Input Search_, 2025. [arXiv:2510.12041](https://arxiv.org/abs/2510.12041)
+- Anthropic, _Extended Thinking_ (1024–128K-token internal-reasoning budgets). [docs.anthropic.com](https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking)
+
 ---
 
-_End of Brief C v0.1. Next iteration (v0.2) should land after Brief B's verdict is final, since a shift in the Ilya↔LeCun stance would re-price H1 and H8._
+_End of Brief C v0.2. v0.1 (H1–H8) shipped 2026-04-23; v0.2 amendments (H9, H10) added 2026-04-26 from a horizon conversation pass. Next iteration (v0.3) should land after Brief B's verdict is final, since a shift in the Ilya↔LeCun stance would re-price H1 and H8; H9/H10 are also contingent on whether an open-weights LFQ-family decoder lands and whether a within-repo `--expand` A/B run produces a usable signal._
