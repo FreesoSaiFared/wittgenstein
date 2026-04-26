@@ -83,6 +83,16 @@ for the full measurement protocol.
 
 Numbers are cheap; files are not. The pack below was generated end-to-end through the
 harness — every artifact has a matching run manifest under `artifacts/runs/<run-id>/`.
+This showcase is a preserved snapshot from the `v0.1.0-alpha.1` hackathon phase: the
+first 35-file pack we used to prove the workflow could emit real artifacts across image,
+audio, and sensor routes.
+
+It is intentionally kept as a historical receipt, not a claim that every artifact already
+matches the post-lock `v0.2` architecture one-for-one. As the codec-v2 port, decoder
+contracts, and manifest spine continue to harden, this showcase pack will be refreshed
+with newer curated outputs rather than silently rewritten in place.
+Treat it as a human-browsable artifact gallery, not as the active execution brief for
+agents; current implementation guidance lives in the codec-v2 plan and agent guides.
 
 **One click per modality (curated `samples/` picks):**
 
@@ -232,7 +242,7 @@ cannot offer this; frozen VQ decoding does. See [`docs/reproducibility.md`](docs
 
 ### For hackers
 
-- [`SHOWCASE.md`](SHOWCASE.md) — 35 real artifacts across 7 modality groups, click to open
+- [`SHOWCASE.md`](SHOWCASE.md) — historical `v0.1.0-alpha.1` hackathon artifact gallery (35 files across 7 modality groups)
 - [`docs/quickstart.md`](docs/quickstart.md) — 30 seconds to a real file
 - [`docs/engineering-discipline.md`](docs/engineering-discipline.md) — how to make sharp, minimal, evidence-backed changes without fighting the repo
 - [`polyglot-mini/README.md`](polyglot-mini/README.md) — Python surface deep-dive
