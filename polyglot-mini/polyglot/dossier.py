@@ -9,9 +9,8 @@ import subprocess
 import time
 import uuid
 from datetime import datetime, timezone
-from fnmatch import fnmatch
 from hashlib import sha256
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Iterable
 
 TEXT_EXTENSIONS = {
@@ -1135,9 +1134,26 @@ def _compute_head_snapshot(source_ledger: dict, repo_root: Path) -> str:
 def _path_allowed(file_path: str, scopes: list[dict]) -> bool:
     allowed_patterns = [pattern for scope in scopes for pattern in scope.get("allowedPaths", [])]
     forbidden_patterns = [pattern for scope in scopes for pattern in scope.get("forbiddenPaths", [])]
-    if any(fnmatch(file_path, pattern) for pattern in forbidden_patterns):
+    if any(_path_matches_scope_pattern(file_path, pattern, subtree_trailing_slash_star=True) for pattern in forbidden_patterns):
         return False
-    return any(fnmatch(file_path, pattern) for pattern in allowed_patterns)
+    return any(_path_matches_scope_pattern(file_path, pattern, subtree_trailing_slash_star=False) for pattern in allowed_patterns)
+
+
+def _path_matches_scope_pattern(file_path: str, pattern: str, *, subtree_trailing_slash_star: bool) -> bool:
+    normalized_path = file_path.replace("\\", "/").lstrip("/")
+    normalized_pattern = pattern.replace("\\", "/").lstrip("/")
+    if not normalized_pattern:
+        return False
+
+    # Forbidden directory contracts such as `packages/*` and `apps/*` are
+    # intended to quarantine whole subtrees.  PurePath.match would only match
+    # one path segment here, so treat trailing slash-star as a prefix when the
+    # caller requests subtree semantics.
+    if subtree_trailing_slash_star and normalized_pattern.endswith("/*"):
+        prefix = normalized_pattern[:-1]
+        return normalized_path.startswith(prefix)
+
+    return PurePosixPath(normalized_path).match(normalized_pattern)
 
 
 def _requires_symbol_accounting(file_path: str, scopes: list[dict]) -> bool:

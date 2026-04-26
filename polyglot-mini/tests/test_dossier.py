@@ -130,6 +130,22 @@ class DossierTests(unittest.TestCase):
         self.assertIn("planning_inference", authority_classes)
         self.assertIn("execution_verified_fact", authority_classes)
 
+    def test_notebooklm_provider_is_structured_unavailable_seam(self) -> None:
+        result = generate_dossier(
+            task="Try the volatile provider seam.",
+            provider="notebooklm",
+            sources=[str(self.root / "specs" / "task.md")],
+            out_path=str(self.root / "exports" / "notebooklm.md"),
+            working_dir=str(self.root),
+        )
+
+        self.assertFalse(result["ok"], result)
+        self.assertEqual(result["error"]["code"], "NOT_IMPLEMENTED")
+        self.assertEqual(result["error"]["details"]["provider"], "notebooklm")
+        manifest = json.loads((Path(result["manifest_path"])).read_text())
+        self.assertFalse(manifest["ok"], manifest)
+        self.assertEqual(manifest["notebooklm"]["status"], "not_implemented")
+
     def test_executor_filtering_excludes_design_inference(self) -> None:
         result = self._generate()
         run_dir = Path(result["run_dir"])
@@ -167,6 +183,64 @@ class DossierTests(unittest.TestCase):
                     "hunks": [
                         {
                             "hunkId": "HUNK-001",
+                            "claimIds": [impl_claim["claimId"]],
+                            "decisionIds": ["DEC-0001"],
+                        }
+                    ],
+                }
+            ],
+        )
+
+        verification = verify_patch_authority(run_dir=str(run_dir), repository_root=str(self.root))
+        self.assertFalse(verification["ok"], verification)
+        self.assertEqual(verification["error"]["code"], "PATCH_SCOPE_VIOLATION")
+
+    def test_level_a_gate_rejects_nested_path_that_allowed_glob_does_not_cover(self) -> None:
+        result = self._generate()
+        run_dir = Path(result["run_dir"])
+        ledger = self._ledger(run_dir)
+        impl_claim = next(claim for claim in ledger["claims"] if claim["authorityClass"] == "implementation_fact")
+
+        (self.root / "polyglot" / "nested").mkdir()
+        (self.root / "polyglot" / "nested" / "hidden.py").write_text("NESTED = True\n")
+        self._write_patch_ledger(
+            run_dir,
+            result,
+            changes=[
+                {
+                    "file": "polyglot/nested/hidden.py",
+                    "hunks": [
+                        {
+                            "hunkId": "HUNK-001B",
+                            "claimIds": [impl_claim["claimId"]],
+                            "decisionIds": ["DEC-0001"],
+                        }
+                    ],
+                }
+            ],
+        )
+
+        verification = verify_patch_authority(run_dir=str(run_dir), repository_root=str(self.root))
+        self.assertFalse(verification["ok"], verification)
+        self.assertEqual(verification["error"]["code"], "PATCH_SCOPE_VIOLATION")
+
+    def test_level_a_gate_rejects_nested_forbidden_path(self) -> None:
+        result = self._generate()
+        run_dir = Path(result["run_dir"])
+        ledger = self._ledger(run_dir)
+        impl_claim = next(claim for claim in ledger["claims"] if claim["authorityClass"] == "implementation_fact")
+
+        (self.root / "packages" / "nested").mkdir()
+        (self.root / "packages" / "nested" / "other.ts").write_text("export const nested = true;\n")
+        self._write_patch_ledger(
+            run_dir,
+            result,
+            changes=[
+                {
+                    "file": "packages/nested/other.ts",
+                    "hunks": [
+                        {
+                            "hunkId": "HUNK-001C",
                             "claimIds": [impl_claim["claimId"]],
                             "decisionIds": ["DEC-0001"],
                         }
