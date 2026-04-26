@@ -1,6 +1,29 @@
 # Dossier codec (local first)
 
-The dossier codec is the first-pass context backend for Wittgenstein's Python prototype surface.
+The dossier codec is the first-pass context backend for Wittgenstein's Python prototype surface. It is the local prototype of a broader **Tarski** idea: an authority runtime that records which evidence may authorize implementation work. The code and CLI names remain `dossier`, `polyglot`, and Wittgenstein-lineage names for now; Tarski is the framework concept, not a package rename in this lane.
+
+The research framing is **Artifact-Deterministic Interfaces**: files are acceptable handoff artifacts only when their authority, provenance, and replay path can be checked mechanically.
+
+## Pipeline
+
+The local path is:
+
+```text
+local files
+  -> source-ledger.json
+  -> claim-ledger.json
+  -> planner-context.md
+  -> executor-context.md
+  -> patch-ledger.json
+  -> scope-certificate.json
+```
+
+1. `source-ledger.json` captures selected local files, hashes, snippets, and the base git/source snapshot.
+2. `claim-ledger.json` turns snippets into claim-addressable authority records.
+3. `planner-context.md` may include planning-only material so a planner can reason about tradeoffs.
+4. `executor-context.md` filters that material down to implementation-authorized claims.
+5. `patch-ledger.json` cites the claims/decisions used by concrete hunks and symbols.
+6. `verify-patch-authority` checks the patch ledger against the actual git diff and writes `scope-certificate.json`.
 
 ## Current execution path (Level A)
 
@@ -19,6 +42,7 @@ The dossier codec is the first-pass context backend for Wittgenstein's Python pr
 - For Python files under Level A scope, the gate also inspects added/modified top-level imports, functions, and classes, and requires `patch-ledger.json` to account for those symbols.
 - DEC sidecars may forbid higher-level capabilities (for example network access) in addition to raw imports/strings.
 - OMX hooks are warnings/sentries only; they are not the enforcement boundary.
+- Path matching is conservative: allowed globs such as `polyglot/*.py` do not authorize nested subdirectories, while forbidden subtree globs such as `packages/*` quarantine descendants.
 
 ## Authority classes
 
@@ -30,9 +54,21 @@ The dossier codec is the first-pass context backend for Wittgenstein's Python pr
 
 `executor-context.md` may include only implementation-authorized claims (`implementation_fact`, `execution_verified_fact`, `promoted_decision`). Raw `design_inference` text must not appear there.
 
+## What Level A proves
+
+Level A proves that a patch is mechanically tied to:
+
+- the run's base source snapshot,
+- implementation-safe claims or promoted decisions,
+- an explicit DEC scope contract,
+- allowed paths and allowed top-level Python symbol changes,
+- absence of configured forbidden imports, strings, and capabilities.
+
+It does **not** prove semantic correctness, product quality, completeness, or safety outside the configured scope contract. Normal tests and review are still required.
+
 ## NotebookLM status
 
-NotebookLM is intentionally left as a `NOT_IMPLEMENTED` seam for now. The local provider is the only supported authority-producing path in dossier-core.
+NotebookLM is intentionally left as a `NOT_IMPLEMENTED` seam for now. It is a volatile provider example, not the core architecture. The local provider is the only supported authority-producing path in dossier-core; a future provider must either produce the same deterministic ledgers or fail with a structured error.
 
 ## Future target (Level B)
 
