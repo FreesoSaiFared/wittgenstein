@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "notebooklm-manual-capture-runner-result-v0",
+  "provider": "notebooklm",
+  "mode": "runner_skeleton",
+  "experimentId": "manual-capture-runner-dry-run",
+  "requestedOperation": "plan-only",
+  "manualGatePresent": true,
+  "notebooklmHomePresent": true,
+  "liveOperationsEnabled": false,
+  "allowedNow": ["write local runner artifacts", "classify gate/home/operation state"],
+  "forbiddenNow": ["notebooklm login", "notebooklm list", "notebooklm ask", "notebooklm create", "notebooklm delete", "source upload", "artifact generation", "browser automation"]
+}

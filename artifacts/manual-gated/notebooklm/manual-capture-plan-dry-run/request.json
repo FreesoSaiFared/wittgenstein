@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "notebooklm-manual-capture-plan-v0",
+  "provider": "notebooklm",
+  "mode": "plan_only",
+  "experimentId": "manual-capture-plan-dry-run",
+  "manualGateRequired": true,
+  "manualGatePresent": false,
+  "notebooklmHomePresent": false,
+  "allowedNow": ["write plan artifacts", "validate manual gate shape", "validate schema", "print future commands without executing them"],
+  "forbiddenNow": ["notebooklm login", "notebooklm list", "notebooklm ask", "notebooklm create", "notebooklm delete", "source upload", "artifact generation", "browser automation"],
+  "artifactLayout": {
+    "root": "artifacts/manual-gated/notebooklm/manual-capture-plan-dry-run",
+    "files": ["request.json", "README.md"]
+  },
+  "authority": {
+    "mayCreateClaims": false,
+    "mayAuthorizeImplementation": false,
+    "requiresLocalPromotion": true
+  }
+}

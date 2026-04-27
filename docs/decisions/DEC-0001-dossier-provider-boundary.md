@@ -20,4 +20,6 @@ The current Level A gate proves provenance and scope, not semantic correctness. 
 
 ## Consequences
 
-The local dossier provider can ship first without NotebookLM, while still producing auditable authority artifacts for implementation work.
+- The local dossier provider can ship first without NotebookLM, while still producing auditable authority artifacts for implementation work.
+- `notebooklm` may exist as a provider selector and metadata seam, but it must not become a second authority path or a core codec.
+- If NotebookLM is unavailable or lacks a verified non-network invocation path, dossier-core must return a structured unavailable result while preserving the same offline replayable artifact spine.

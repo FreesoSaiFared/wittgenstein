@@ -68,7 +68,19 @@ It does **not** prove semantic correctness, product quality, completeness, or sa
 
 ## NotebookLM status
 
-NotebookLM is intentionally left as a `NOT_IMPLEMENTED` seam for now. It is a volatile provider example, not the core architecture. The local provider is the only supported authority-producing path in dossier-core; a future provider must either produce the same deterministic ledgers or fail with a structured error.
+NotebookLM is a recognized volatile provider seam, not a core codec or a
+second authority path.
+
+- `--provider notebooklm` is accepted by the dossier CLI.
+- Dossier-core records provider metadata in `manifest.json`, `provider-output.md`, and the context pack.
+- If `notebooklm-py` or a safe CLI path is unavailable/unclear, dossier-core still writes the normal offline artifacts and returns a structured `PROVIDER_UNAVAILABLE` result instead of crashing.
+- The exact locally verified contract state is documented in `docs/contracts/notebooklm-py-invocation-contract.md`.
+- Replay stays offline and re-renders from captured artifacts; it does not attempt to re-probe NotebookLM.
+
+The local provider remains the only supported authority-producing path today.
+A future NotebookLM provider must capture and hash provider output, emit the
+same deterministic ledgers, and pass the same patch-authority gate before its
+claims can authorize implementation work.
 
 ## Future target (Level B)
 

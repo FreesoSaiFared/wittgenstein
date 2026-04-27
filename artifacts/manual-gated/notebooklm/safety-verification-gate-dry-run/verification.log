@@ -1,0 +1,848 @@
+=== raw transcript hygiene ===
+=== json schema syntax: docs/schemas/notebooklm-live-execution-stub-v0.json ===
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://wittgenstein.local/schemas/notebooklm-live-execution-stub-v0.json",
+    "title": "NotebookLM Live Execution Stub v0",
+    "type": "object",
+    "required": [
+        "schemaVersion",
+        "provider",
+        "mode",
+        "status",
+        "ok",
+        "liveNotebookLMExecuted",
+        "commandsExecuted",
+        "rawTranscriptPaths",
+        "redactedTranscriptPaths",
+        "redactionReportPaths",
+        "authority"
+    ],
+    "properties": {
+        "schemaVersion": {
+            "const": "notebooklm-live-execution-stub-v0"
+        },
+        "provider": {
+            "const": "notebooklm"
+        },
+        "mode": {
+            "const": "live_execution_stub"
+        },
+        "status": {
+            "enum": [
+                "gate_missing",
+                "home_missing",
+                "readonly_enable_missing",
+                "live_execution_disabled",
+                "stubbed_transcript_redacted",
+                "blocked"
+            ]
+        },
+        "ok": {
+            "type": "boolean"
+        },
+        "experimentId": {
+            "type": "string"
+        },
+        "requestedOperation": {
+            "type": "string"
+        },
+        "wouldExecuteCommand": {
+            "const": "notebooklm list"
+        },
+        "liveNotebookLMExecuted": {
+            "type": "boolean",
+            "const": false
+        },
+        "commandsExecuted": {
+            "type": "array",
+            "maxItems": 0
+        },
+        "rawTranscriptPaths": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "redactedTranscriptPaths": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "redactionReportPaths": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "errors": {
+            "type": "array"
+        },
+        "authority": {
+            "type": "object",
+            "required": [
+                "mayCreateClaims",
+                "mayAuthorizeImplementation",
+                "requiresLocalPromotion"
+            ],
+            "properties": {
+                "mayCreateClaims": {
+                    "type": "boolean"
+                },
+                "mayAuthorizeImplementation": {
+                    "type": "boolean"
+                },
+                "requiresLocalPromotion": {
+                    "type": "boolean"
+                },
+                "providerOutputOnly": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": true
+        }
+    },
+    "additionalProperties": true
+}
+=== json schema syntax: docs/schemas/notebooklm-live-runner-dry-harness-v0.json ===
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://wittgenstein.local/schemas/notebooklm-live-runner-dry-harness-v0.json",
+    "title": "NotebookLM Live Runner Dry Harness v0",
+    "type": "object",
+    "required": [
+        "schemaVersion",
+        "provider",
+        "mode",
+        "status",
+        "ok",
+        "liveNotebookLMExecuted",
+        "commandsExecuted",
+        "authority"
+    ],
+    "properties": {
+        "schemaVersion": {
+            "const": "notebooklm-live-runner-dry-harness-v0"
+        },
+        "provider": {
+            "const": "notebooklm"
+        },
+        "mode": {
+            "const": "live_runner_dry_harness"
+        },
+        "status": {
+            "enum": [
+                "gate_missing",
+                "home_missing",
+                "readonly_enable_missing",
+                "live_execution_disabled",
+                "would_execute_but_stubbed",
+                "blocked"
+            ]
+        },
+        "ok": {
+            "type": "boolean"
+        },
+        "experimentId": {
+            "type": "string"
+        },
+        "requestedOperation": {
+            "type": "string"
+        },
+        "wouldExecuteCommand": {
+            "const": "notebooklm list"
+        },
+        "liveNotebookLMExecuted": {
+            "type": "boolean",
+            "const": false
+        },
+        "commandsExecuted": {
+            "type": "array",
+            "maxItems": 0
+        },
+        "errors": {
+            "type": "array"
+        },
+        "authority": {
+            "type": "object",
+            "required": [
+                "mayCreateClaims",
+                "mayAuthorizeImplementation",
+                "requiresLocalPromotion"
+            ],
+            "properties": {
+                "mayCreateClaims": {
+                    "type": "boolean"
+                },
+                "mayAuthorizeImplementation": {
+                    "type": "boolean"
+                },
+                "requiresLocalPromotion": {
+                    "type": "boolean"
+                },
+                "providerOutputOnly": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": true
+        }
+    },
+    "additionalProperties": true
+}
+=== json schema syntax: docs/schemas/notebooklm-live-runner-result-v0.json ===
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://wittgenstein.local/schemas/notebooklm-live-runner-result-v0.json",
+    "title": "NotebookLM Live Runner Result v0",
+    "type": "object",
+    "required": [
+        "schemaVersion",
+        "provider",
+        "mode",
+        "status",
+        "ok",
+        "liveNotebookLMExecuted",
+        "commandsExecuted",
+        "redactedTranscriptPaths",
+        "redactionReportPaths",
+        "authority"
+    ],
+    "properties": {
+        "schemaVersion": {
+            "const": "notebooklm-live-runner-result-v0"
+        },
+        "provider": {
+            "const": "notebooklm"
+        },
+        "mode": {
+            "const": "live_runner_guarded"
+        },
+        "status": {
+            "enum": [
+                "gate_missing",
+                "home_missing",
+                "readonly_enable_missing",
+                "live_execution_disabled",
+                "subprocess_execution_disabled",
+                "ready_to_execute",
+                "readonly_probe_captured",
+                "readonly_probe_failed",
+                "blocked"
+            ]
+        },
+        "ok": {
+            "type": "boolean"
+        },
+        "requestedOperation": {
+            "type": "string"
+        },
+        "command": {
+            "const": "notebooklm list"
+        },
+        "returncode": {
+            "type": [
+                "integer",
+                "null"
+            ]
+        },
+        "liveNotebookLMExecuted": {
+            "type": "boolean"
+        },
+        "commandsExecuted": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "gate": {
+            "type": "object",
+            "additionalProperties": true
+        },
+        "rawTranscriptPaths": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "redactedTranscriptPaths": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "redactionReportPaths": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "errors": {
+            "type": "array"
+        },
+        "authority": {
+            "type": "object",
+            "required": [
+                "mayCreateClaims",
+                "mayAuthorizeImplementation",
+                "requiresLocalPromotion"
+            ],
+            "properties": {
+                "mayCreateClaims": {
+                    "type": "boolean"
+                },
+                "mayAuthorizeImplementation": {
+                    "type": "boolean"
+                },
+                "requiresLocalPromotion": {
+                    "type": "boolean"
+                },
+                "providerOutputOnly": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": true
+        }
+    },
+    "additionalProperties": true
+}
+=== json schema syntax: docs/schemas/notebooklm-manual-capture-plan-v0.json ===
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://wittgenstein.local/schemas/notebooklm-manual-capture-plan-v0.json",
+    "title": "NotebookLM Manual Capture Plan v0",
+    "type": "object",
+    "required": [
+        "schemaVersion",
+        "provider",
+        "mode",
+        "experimentId",
+        "manualGateRequired",
+        "allowedNow",
+        "forbiddenNow",
+        "artifactLayout"
+    ],
+    "properties": {
+        "schemaVersion": {
+            "const": "notebooklm-manual-capture-plan-v0"
+        },
+        "provider": {
+            "const": "notebooklm"
+        },
+        "mode": {
+            "const": "plan_only"
+        },
+        "experimentId": {
+            "type": "string",
+            "minLength": 1
+        },
+        "manualGateRequired": {
+            "type": "boolean",
+            "const": true
+        },
+        "allowedNow": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "forbiddenNow": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "artifactLayout": {
+            "type": "object",
+            "required": [
+                "root",
+                "files"
+            ],
+            "properties": {
+                "root": {
+                    "type": "string"
+                },
+                "files": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            },
+            "additionalProperties": true
+        },
+        "authority": {
+            "type": "object",
+            "properties": {
+                "mayCreateClaims": {
+                    "type": "boolean"
+                },
+                "mayAuthorizeImplementation": {
+                    "type": "boolean"
+                },
+                "requiresLocalPromotion": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": true
+        }
+    },
+    "additionalProperties": true
+}
+=== json schema syntax: docs/schemas/notebooklm-manual-capture-runner-result-v0.json ===
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://wittgenstein.local/schemas/notebooklm-manual-capture-runner-result-v0.json",
+    "title": "NotebookLM Manual Capture Runner Result v0",
+    "type": "object",
+    "required": [
+        "schemaVersion",
+        "provider",
+        "mode",
+        "status",
+        "ok",
+        "experimentId",
+        "liveNotebookLMExecuted",
+        "errors",
+        "authority"
+    ],
+    "properties": {
+        "schemaVersion": {
+            "const": "notebooklm-manual-capture-runner-result-v0"
+        },
+        "provider": {
+            "const": "notebooklm"
+        },
+        "mode": {
+            "const": "runner_skeleton"
+        },
+        "status": {
+            "enum": [
+                "plan_only",
+                "blocked",
+                "gate_missing",
+                "home_missing"
+            ]
+        },
+        "ok": {
+            "type": "boolean"
+        },
+        "experimentId": {
+            "type": "string",
+            "minLength": 1
+        },
+        "requestedOperation": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "manualGatePresent": {
+            "type": "boolean"
+        },
+        "notebooklmHomePresent": {
+            "type": "boolean"
+        },
+        "liveNotebookLMExecuted": {
+            "type": "boolean",
+            "const": false
+        },
+        "commandsExecuted": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "maxItems": 0
+        },
+        "errors": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "code",
+                    "message"
+                ],
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "blocking": {
+                        "type": "boolean"
+                    },
+                    "details": {
+                        "type": "object",
+                        "additionalProperties": true
+                    }
+                },
+                "additionalProperties": true
+            }
+        },
+        "authority": {
+            "type": "object",
+            "required": [
+                "mayCreateClaims",
+                "mayAuthorizeImplementation",
+                "requiresLocalPromotion"
+            ],
+            "properties": {
+                "mayCreateClaims": {
+                    "type": "boolean"
+                },
+                "mayAuthorizeImplementation": {
+                    "type": "boolean"
+                },
+                "requiresLocalPromotion": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": true
+        }
+    },
+    "additionalProperties": true
+}
+=== json schema syntax: docs/schemas/notebooklm-provider-result-v0.json ===
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://wittgenstein.local/schemas/notebooklm-provider-result-v0.json",
+    "title": "NotebookLM Provider Result v0",
+    "type": "object",
+    "required": [
+        "contractVersion",
+        "provider",
+        "status",
+        "ok",
+        "authority"
+    ],
+    "properties": {
+        "contractVersion": {
+            "const": "notebooklm-provider-result-v0"
+        },
+        "provider": {
+            "const": "notebooklm"
+        },
+        "status": {
+            "enum": [
+                "unavailable",
+                "not_ready",
+                "failed",
+                "captured"
+            ]
+        },
+        "ok": {
+            "type": "boolean"
+        },
+        "runId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "requestId": {
+            "type": [
+                "string",
+                "null"
+            ]
+        },
+        "preflight": {
+            "type": "object",
+            "additionalProperties": true
+        },
+        "capture": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+                "mode": {
+                    "enum": [
+                        "none",
+                        "cli",
+                        "python_api",
+                        "manual_export"
+                    ]
+                },
+                "notebookId": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "notebookTitle": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "operation": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "capturedAt": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "rawTextPath": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                },
+                "metadataPath": {
+                    "type": [
+                        "string",
+                        "null"
+                    ]
+                }
+            }
+        },
+        "errors": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "code",
+                    "message"
+                ],
+                "properties": {
+                    "code": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "details": {
+                        "type": "object",
+                        "additionalProperties": true
+                    }
+                },
+                "additionalProperties": true
+            }
+        },
+        "authority": {
+            "type": "object",
+            "required": [
+                "mayCreateClaims",
+                "mayAuthorizeImplementation",
+                "requiresLocalPromotion"
+            ],
+            "properties": {
+                "mayCreateClaims": {
+                    "type": "boolean"
+                },
+                "mayAuthorizeImplementation": {
+                    "type": "boolean"
+                },
+                "requiresLocalPromotion": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": true
+        }
+    },
+    "additionalProperties": true
+}
+=== json schema syntax: docs/schemas/notebooklm-readonly-probe-spec-v0.json ===
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://wittgenstein.local/schemas/notebooklm-readonly-probe-spec-v0.json",
+    "title": "NotebookLM Read-Only Probe Spec v0",
+    "type": "object",
+    "required": [
+        "schemaVersion",
+        "provider",
+        "mode",
+        "operation",
+        "liveNotebookLMExecuted",
+        "approvedNow",
+        "futureCommand",
+        "authority"
+    ],
+    "properties": {
+        "schemaVersion": {
+            "const": "notebooklm-readonly-probe-spec-v0"
+        },
+        "provider": {
+            "const": "notebooklm"
+        },
+        "mode": {
+            "const": "spec_only"
+        },
+        "operation": {
+            "const": "readonly-list"
+        },
+        "futureCommand": {
+            "const": "notebooklm list"
+        },
+        "approvedNow": {
+            "type": "boolean",
+            "const": false
+        },
+        "liveNotebookLMExecuted": {
+            "type": "boolean",
+            "const": false
+        },
+        "manualGateRequired": {
+            "type": "boolean",
+            "const": true
+        },
+        "futureGate": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "string"
+            }
+        },
+        "forbiddenNow": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "futureArtifacts": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "authority": {
+            "type": "object",
+            "required": [
+                "mayCreateClaims",
+                "mayAuthorizeImplementation",
+                "requiresLocalPromotion"
+            ],
+            "properties": {
+                "mayCreateClaims": {
+                    "type": "boolean"
+                },
+                "mayAuthorizeImplementation": {
+                    "type": "boolean"
+                },
+                "requiresLocalPromotion": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": true
+        }
+    },
+    "additionalProperties": true
+}
+=== json schema syntax: docs/schemas/notebooklm-redaction-report-v0.json ===
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://wittgenstein.local/schemas/notebooklm-redaction-report-v0.json",
+    "title": "NotebookLM Redaction Report v0",
+    "type": "object",
+    "required": [
+        "schemaVersion",
+        "inputSha256",
+        "outputSha256",
+        "changed",
+        "totalRedactions",
+        "redactions",
+        "liveNotebookLMExecuted",
+        "authority"
+    ],
+    "properties": {
+        "schemaVersion": {
+            "const": "notebooklm-redaction-report-v0"
+        },
+        "inputSha256": {
+            "type": "string"
+        },
+        "outputSha256": {
+            "type": "string"
+        },
+        "changed": {
+            "type": "boolean"
+        },
+        "totalRedactions": {
+            "type": "integer",
+            "minimum": 0
+        },
+        "redactions": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "required": [
+                    "type",
+                    "count"
+                ],
+                "properties": {
+                    "type": {
+                        "type": "string"
+                    },
+                    "count": {
+                        "type": "integer",
+                        "minimum": 1
+                    }
+                },
+                "additionalProperties": true
+            }
+        },
+        "liveNotebookLMExecuted": {
+            "type": "boolean",
+            "const": false
+        },
+        "authority": {
+            "type": "object",
+            "required": [
+                "mayCreateClaims",
+                "mayAuthorizeImplementation",
+                "requiresLocalPromotion"
+            ],
+            "properties": {
+                "mayCreateClaims": {
+                    "type": "boolean"
+                },
+                "mayAuthorizeImplementation": {
+                    "type": "boolean"
+                },
+                "requiresLocalPromotion": {
+                    "type": "boolean"
+                },
+                "providerOutputOnly": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": true
+        }
+    },
+    "additionalProperties": true
+}
+=== notebooklm unittest suite ===
+test_claim_ledger_generation_writes_artifacts (polyglot-mini.tests.test_dossier.DossierTests.test_claim_ledger_generation_writes_artifacts) ... ok
+test_executor_filtering_excludes_design_inference (polyglot-mini.tests.test_dossier.DossierTests.test_executor_filtering_excludes_design_inference) ... ok
+test_level_a_gate_accepts_minimal_safe_patch_and_emits_certificate (polyglot-mini.tests.test_dossier.DossierTests.test_level_a_gate_accepts_minimal_safe_patch_and_emits_certificate) ... ok
+test_level_a_gate_rejects_forbidden_capability (polyglot-mini.tests.test_dossier.DossierTests.test_level_a_gate_rejects_forbidden_capability) ... ok
+test_level_a_gate_rejects_forbidden_import_or_string (polyglot-mini.tests.test_dossier.DossierTests.test_level_a_gate_rejects_forbidden_import_or_string) ... ok
+test_level_a_gate_rejects_forbidden_path (polyglot-mini.tests.test_dossier.DossierTests.test_level_a_gate_rejects_forbidden_path) ... ok
+test_level_a_gate_rejects_tainted_claim (polyglot-mini.tests.test_dossier.DossierTests.test_level_a_gate_rejects_tainted_claim) ... ok
+test_level_a_gate_rejects_unaccounted_changed_python_symbol (polyglot-mini.tests.test_dossier.DossierTests.test_level_a_gate_rejects_unaccounted_changed_python_symbol) ... ok
+test_level_a_gate_rejects_unaccounted_file (polyglot-mini.tests.test_dossier.DossierTests.test_level_a_gate_rejects_unaccounted_file) ... ok
+test_notebooklm_preflight_never_runs_cli_commands (polyglot-mini.tests.test_dossier.DossierTests.test_notebooklm_preflight_never_runs_cli_commands) ... ok
+test_notebooklm_preflight_reports_missing_package_and_cli_without_crashing (polyglot-mini.tests.test_dossier.DossierTests.test_notebooklm_preflight_reports_missing_package_and_cli_without_crashing) ... ok
+test_notebooklm_preflight_reports_missing_storage_when_configured (polyglot-mini.tests.test_dossier.DossierTests.test_notebooklm_preflight_reports_missing_storage_when_configured) ... ok
+test_notebooklm_provider_unavailable_is_structured (polyglot-mini.tests.test_dossier.DossierTests.test_notebooklm_provider_unavailable_is_structured) ... ok
+test_offline_replay_regenerates_context (polyglot-mini.tests.test_dossier.DossierTests.test_offline_replay_regenerates_context) ... ok
+test_request_is_metadata_only_and_authority_constrained (polyglot-mini.tests.test_notebooklm_adapter.NotebookLMAdapterSkeletonTests.test_request_is_metadata_only_and_authority_constrained) ... ok
+test_skeleton_does_not_run_subprocess_or_network_calls (polyglot-mini.tests.test_notebooklm_adapter.NotebookLMAdapterSkeletonTests.test_skeleton_does_not_run_subprocess_or_network_calls) ... ok
+test_skeleton_returns_structured_not_ready_result (polyglot-mini.tests.test_notebooklm_adapter.NotebookLMAdapterSkeletonTests.test_skeleton_returns_structured_not_ready_result) ... ok
+test_notebooklm_provider_metadata_includes_adapter_skeleton_result (polyglot-mini.tests.test_notebooklm_provider_output_wire.NotebookLMProviderOutputWireTests.test_notebooklm_provider_metadata_includes_adapter_skeleton_result) ... ok
+test_cli_writes_redacted_output_and_report (polyglot-mini.tests.test_notebooklm_redaction.NotebookLMRedactionTests.test_cli_writes_redacted_output_and_report) ... ok
+test_redaction_is_stable_when_no_secret_present (polyglot-mini.tests.test_notebooklm_redaction.NotebookLMRedactionTests.test_redaction_is_stable_when_no_secret_present) ... ok
+test_redacts_common_secret_shapes (polyglot-mini.tests.test_notebooklm_redaction.NotebookLMRedactionTests.test_redacts_common_secret_shapes) ... ok
+test_full_gate_is_required_before_execute (polyglot-mini.tests.test_notebooklm_live_runner.NotebookLMLiveRunnerTests.test_full_gate_is_required_before_execute) ... ok
+test_gate_blocks_without_manual_gate (polyglot-mini.tests.test_notebooklm_live_runner.NotebookLMLiveRunnerTests.test_gate_blocks_without_manual_gate) ... ok
+test_guarded_runner_can_use_injected_command_runner_and_redacts_output (polyglot-mini.tests.test_notebooklm_live_runner.NotebookLMLiveRunnerTests.test_guarded_runner_can_use_injected_command_runner_and_redacts_output) ... ok
+test_guarded_runner_does_not_call_command_runner_when_gate_absent (polyglot-mini.tests.test_notebooklm_live_runner.NotebookLMLiveRunnerTests.test_guarded_runner_does_not_call_command_runner_when_gate_absent) ... ok
+
+----------------------------------------------------------------------
+Ran 25 tests in 1.370s
+
+OK
+=== diff whitespace check ===

@@ -5,8 +5,10 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from polyglot.dossier import generate_dossier, replay_dossier, verify_patch_authority
+from polyglot.notebooklm_provider import preflight_notebooklm_provider
 
 
 class DossierTests(unittest.TestCase):
@@ -84,11 +86,11 @@ class DossierTests(unittest.TestCase):
             capture_output=True,
         )
 
-    def _generate(self) -> dict:
+    def _generate(self, *, provider: str = "local") -> dict:
         out_path = self.root / "exports" / "executor-context.md"
         return generate_dossier(
             task="Implement the local dossier provider and authority gate.",
-            provider="local",
+            provider=provider,
             sources=[
                 str(self.root / "specs" / "task.md"),
                 str(self.root / "polyglot"),
@@ -122,6 +124,16 @@ class DossierTests(unittest.TestCase):
         self.assertTrue((run_dir / "planner-context.md").exists())
         self.assertTrue((run_dir / "executor-context.md").exists())
         self.assertTrue((run_dir / "manifest.json").exists())
+        self.assertTrue((run_dir / "provider-output.md").exists())
+
+        manifest = json.loads((run_dir / "manifest.json").read_text())
+        self.assertEqual(manifest["provider"], "local")
+        self.assertEqual(manifest["providerMeta"]["status"], "available")
+        self.assertEqual(manifest["providerOutputPath"], str(run_dir / "provider-output.md"))
+
+        provider_output = (run_dir / "provider-output.md").read_text()
+        self.assertIn("Provider: local", provider_output)
+        self.assertIn("Status: available", provider_output)
 
         ledger = self._ledger(run_dir)
         authority_classes = {claim["authorityClass"] for claim in ledger["claims"]}
@@ -130,21 +142,87 @@ class DossierTests(unittest.TestCase):
         self.assertIn("planning_inference", authority_classes)
         self.assertIn("execution_verified_fact", authority_classes)
 
-    def test_notebooklm_provider_is_structured_unavailable_seam(self) -> None:
-        result = generate_dossier(
-            task="Try the volatile provider seam.",
-            provider="notebooklm",
-            sources=[str(self.root / "specs" / "task.md")],
-            out_path=str(self.root / "exports" / "notebooklm.md"),
-            working_dir=str(self.root),
-        )
-
+    def test_notebooklm_provider_unavailable_is_structured(self) -> None:
+        result = self._generate(provider="notebooklm")
         self.assertFalse(result["ok"], result)
-        self.assertEqual(result["error"]["code"], "NOT_IMPLEMENTED")
-        self.assertEqual(result["error"]["details"]["provider"], "notebooklm")
-        manifest = json.loads((Path(result["manifest_path"])).read_text())
-        self.assertFalse(manifest["ok"], manifest)
-        self.assertEqual(manifest["notebooklm"]["status"], "not_implemented")
+        self.assertEqual(result["provider"], "notebooklm")
+        self.assertIn(result["error"]["code"], {"PROVIDER_UNAVAILABLE", "PROVIDER_NOT_READY"})
+        self.assertIn("provider_meta", result)
+        self.assertIn(result["provider_meta"]["status"], {"unavailable", "not_ready"})
+
+        run_dir = Path(result["run_dir"])
+        manifest = json.loads((run_dir / "manifest.json").read_text())
+        self.assertFalse(manifest["ok"])
+        self.assertEqual(manifest["providerMeta"]["provider"], "notebooklm")
+        self.assertIn(manifest["providerMeta"]["status"], {"unavailable", "not_ready"})
+        self.assertEqual(manifest["providerOutputPath"], str(run_dir / "provider-output.md"))
+        self.assertIn("preflight", manifest["providerMeta"])
+        self.assertIn("errors", manifest["providerMeta"])
+
+        provider_output = (run_dir / "provider-output.md").read_text()
+        self.assertIn("Provider: notebooklm", provider_output)
+        self.assertRegex(provider_output, r"Status: (unavailable|not_ready)")
+        self.assertIn("NOTEBOOKLM_READY_UNVERIFIED", provider_output)
+
+    def test_notebooklm_preflight_reports_missing_package_and_cli_without_crashing(self) -> None:
+        with mock.patch("polyglot.notebooklm_provider.importlib.util.find_spec", return_value=None), mock.patch(
+            "polyglot.notebooklm_provider.importlib.metadata.distributions", return_value=[]
+        ), mock.patch("polyglot.notebooklm_provider.shutil.which", return_value=None), mock.patch.dict(
+            "os.environ",
+            {},
+            clear=True,
+        ):
+            metadata = preflight_notebooklm_provider()
+
+        self.assertEqual(metadata["provider"], "notebooklm")
+        self.assertEqual(metadata["status"], "unavailable")
+        error_codes = {error["code"] for error in metadata["errors"]}
+        self.assertIn("NOTEBOOKLM_PACKAGE_MISSING", error_codes)
+        self.assertIn("NOTEBOOKLM_CLI_MISSING", error_codes)
+        self.assertIn("NOTEBOOKLM_AUTH_UNVERIFIED", error_codes)
+        self.assertIn("NOTEBOOKLM_READY_UNVERIFIED", error_codes)
+        self.assertIsNone(metadata["safeSmokeCommand"])
+
+    def test_notebooklm_preflight_reports_missing_storage_when_configured(self) -> None:
+        fake_home = self.root / "missing-notebooklm-home"
+        fake_cli = str(self.root / "bin" / "notebooklm")
+
+        fake_distribution = mock.Mock()
+        fake_distribution.version = "0.3.4"
+        fake_distribution.metadata = {"Name": "notebooklm-py", "Summary": "Unofficial Python library"}
+        fake_distribution.entry_points = [mock.Mock(group="console_scripts", name="notebooklm")]
+        fake_distribution.locate_file.return_value = Path("/tmp/site-packages")
+
+        fake_spec = mock.Mock(origin="/tmp/site-packages/notebooklm/__init__.py")
+
+        with mock.patch("polyglot.notebooklm_provider.importlib.util.find_spec", return_value=fake_spec), mock.patch(
+            "polyglot.notebooklm_provider.importlib.metadata.distributions", return_value=[fake_distribution]
+        ), mock.patch("polyglot.notebooklm_provider.shutil.which", return_value=fake_cli), mock.patch.dict(
+            "os.environ",
+            {"NOTEBOOKLM_HOME": str(fake_home)},
+            clear=True,
+        ):
+            metadata = preflight_notebooklm_provider()
+
+        self.assertEqual(metadata["status"], "not_ready")
+        self.assertEqual(metadata["preflight"]["storage"]["source"], "NOTEBOOKLM_HOME")
+        self.assertEqual(metadata["preflight"]["storage"]["path"], str(fake_home / "storage_state.json"))
+        self.assertFalse(metadata["preflight"]["storage"]["exists"])
+        error_codes = {error["code"] for error in metadata["errors"]}
+        self.assertIn("NOTEBOOKLM_STORAGE_MISSING", error_codes)
+        self.assertIn("NOTEBOOKLM_READY_UNVERIFIED", error_codes)
+        self.assertEqual(metadata["safeSmokeCommand"], "notebooklm --help")
+
+    def test_notebooklm_preflight_never_runs_cli_commands(self) -> None:
+        with mock.patch("polyglot.notebooklm_provider.subprocess.run") as run_mock, mock.patch(
+            "polyglot.notebooklm_provider.importlib.util.find_spec", return_value=None
+        ), mock.patch("polyglot.notebooklm_provider.importlib.metadata.distributions", return_value=[]), mock.patch(
+            "polyglot.notebooklm_provider.shutil.which",
+            return_value=None,
+        ), mock.patch.dict("os.environ", {}, clear=True):
+            preflight_notebooklm_provider()
+
+        run_mock.assert_not_called()
 
     def test_executor_filtering_excludes_design_inference(self) -> None:
         result = self._generate()
@@ -163,7 +241,9 @@ class DossierTests(unittest.TestCase):
         expected_executor = (run_dir / "executor-context.md").read_text()
         replay_out = self.root / "replayed" / "executor-context.md"
 
-        replay = replay_dossier(str(run_dir), out_path=str(replay_out))
+        with mock.patch("polyglot.dossier._detect_notebooklm_environment", side_effect=AssertionError("replay should stay offline")):
+            replay = replay_dossier(str(run_dir), out_path=str(replay_out))
+
         self.assertTrue(replay["ok"], replay)
         self.assertEqual(replay_out.read_text(), expected_executor)
 

@@ -1,0 +1,8 @@
+NotebookLM synthetic captured-result fixture
+operation=readonly-list
+notebook_count=2
+notebooks:
+- Synthetic Research Notebook
+- Synthetic Source Ledger Notebook
+No credentials are present.
+NotebookLM can inform; local artifacts decide.

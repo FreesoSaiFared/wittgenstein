@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wittgenstein.local/schemas/notebooklm-redaction-report-v0.json",
+  "title": "NotebookLM Redaction Report v0",
+  "type": "object",
+  "required": ["schemaVersion", "inputSha256", "outputSha256", "changed", "totalRedactions", "redactions", "liveNotebookLMExecuted", "authority"],
+  "properties": {
+    "schemaVersion": { "const": "notebooklm-redaction-report-v0" },
+    "inputSha256": { "type": "string" },
+    "outputSha256": { "type": "string" },
+    "changed": { "type": "boolean" },
+    "totalRedactions": { "type": "integer", "minimum": 0 },
+    "redactions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "count"],
+        "properties": {
+          "type": { "type": "string" },
+          "count": { "type": "integer", "minimum": 1 }
+        },
+        "additionalProperties": true
+      }
+    },
+    "liveNotebookLMExecuted": { "type": "boolean", "const": false },
+    "authority": {
+      "type": "object",
+      "required": ["mayCreateClaims", "mayAuthorizeImplementation", "requiresLocalPromotion"],
+      "properties": {
+        "mayCreateClaims": { "type": "boolean" },
+        "mayAuthorizeImplementation": { "type": "boolean" },
+        "requiresLocalPromotion": { "type": "boolean" },
+        "providerOutputOnly": { "type": "boolean" }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

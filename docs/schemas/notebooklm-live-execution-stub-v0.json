@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wittgenstein.local/schemas/notebooklm-live-execution-stub-v0.json",
+  "title": "NotebookLM Live Execution Stub v0",
+  "type": "object",
+  "required": ["schemaVersion", "provider", "mode", "status", "ok", "liveNotebookLMExecuted", "commandsExecuted", "rawTranscriptPaths", "redactedTranscriptPaths", "redactionReportPaths", "authority"],
+  "properties": {
+    "schemaVersion": { "const": "notebooklm-live-execution-stub-v0" },
+    "provider": { "const": "notebooklm" },
+    "mode": { "const": "live_execution_stub" },
+    "status": {
+      "enum": ["gate_missing", "home_missing", "readonly_enable_missing", "live_execution_disabled", "stubbed_transcript_redacted", "blocked"]
+    },
+    "ok": { "type": "boolean" },
+    "experimentId": { "type": "string" },
+    "requestedOperation": { "type": "string" },
+    "wouldExecuteCommand": { "const": "notebooklm list" },
+    "liveNotebookLMExecuted": { "type": "boolean", "const": false },
+    "commandsExecuted": { "type": "array", "maxItems": 0 },
+    "rawTranscriptPaths": { "type": "array", "items": { "type": "string" } },
+    "redactedTranscriptPaths": { "type": "array", "items": { "type": "string" } },
+    "redactionReportPaths": { "type": "array", "items": { "type": "string" } },
+    "errors": { "type": "array" },
+    "authority": {
+      "type": "object",
+      "required": ["mayCreateClaims", "mayAuthorizeImplementation", "requiresLocalPromotion"],
+      "properties": {
+        "mayCreateClaims": { "type": "boolean" },
+        "mayAuthorizeImplementation": { "type": "boolean" },
+        "requiresLocalPromotion": { "type": "boolean" },
+        "providerOutputOnly": { "type": "boolean" }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

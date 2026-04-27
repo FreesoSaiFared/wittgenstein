@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wittgenstein.local/schemas/notebooklm-captured-result-fixture-v0.json",
+  "title": "NotebookLM Captured Result Fixture v0",
+  "type": "object",
+  "required": ["schemaVersion", "provider", "mode", "status", "ok", "liveNotebookLMExecuted", "commandsExecuted", "capture", "authority"],
+  "properties": {
+    "schemaVersion": { "const": "notebooklm-captured-result-fixture-v0" },
+    "provider": { "const": "notebooklm" },
+    "mode": { "const": "captured_result_fixture" },
+    "status": { "const": "captured_fixture" },
+    "ok": { "type": "boolean" },
+    "liveNotebookLMExecuted": { "type": "boolean", "const": false },
+    "commandsExecuted": { "type": "array", "maxItems": 0 },
+    "requestedOperation": { "const": "readonly-list" },
+    "command": { "const": "notebooklm list" },
+    "returncode": { "type": "integer" },
+    "capture": {
+      "type": "object",
+      "required": ["kind", "source", "redactedTranscriptPath", "redactionReportPath"],
+      "properties": {
+        "kind": { "const": "synthetic_fixture" },
+        "source": { "const": "local_test_fixture" },
+        "redactedTranscriptPath": { "type": "string" },
+        "redactionReportPath": { "type": "string" }
+      },
+      "additionalProperties": true
+    },
+    "authority": {
+      "type": "object",
+      "required": ["mayCreateClaims", "mayAuthorizeImplementation", "requiresLocalPromotion", "providerOutputOnly"],
+      "properties": {
+        "mayCreateClaims": { "type": "boolean", "const": false },
+        "mayAuthorizeImplementation": { "type": "boolean", "const": false },
+        "requiresLocalPromotion": { "type": "boolean", "const": true },
+        "providerOutputOnly": { "type": "boolean", "const": true }
+      },
+      "additionalProperties": true
+    },
+    "notes": { "type": "array", "items": { "type": "string" } }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "notebooklm-safety-verification-result-v0",
+  "provider": "notebooklm",
+  "mode": "safety_verification_gate",
+  "ok": true,
+  "startedAt": "2026-04-25T14:21:19Z",
+  "finishedAt": "2026-04-25T14:21:21Z",
+  "checks": [
+    "raw transcript hygiene",
+    "notebooklm schema JSON syntax",
+    "NotebookLM unittest suite",
+    "git diff --check"
+  ],
+  "liveNotebookLMExecuted": false,
+  "commandsExecuted": [],
+  "logPath": "artifacts/manual-gated/notebooklm/safety-verification-gate-dry-run/verification.log",
+  "authority": {
+    "mayCreateClaims": false,
+    "mayAuthorizeImplementation": false,
+    "requiresLocalPromotion": true,
+    "providerOutputOnly": true
+  }
+}

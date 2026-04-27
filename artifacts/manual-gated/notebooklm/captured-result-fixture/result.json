@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "notebooklm-captured-result-fixture-v0",
+  "provider": "notebooklm",
+  "mode": "captured_result_fixture",
+  "status": "captured_fixture",
+  "ok": true,
+  "liveNotebookLMExecuted": false,
+  "commandsExecuted": [],
+  "requestedOperation": "readonly-list",
+  "command": "notebooklm list",
+  "returncode": 0,
+  "capture": {
+    "kind": "synthetic_fixture",
+    "source": "local_test_fixture",
+    "redactedTranscriptPath": "artifacts/manual-gated/notebooklm/captured-result-fixture/transcript.stdout.redacted.txt",
+    "redactionReportPath": "artifacts/manual-gated/notebooklm/captured-result-fixture/redaction-report.stdout.json"
+  },
+  "authority": {
+    "mayCreateClaims": false,
+    "mayAuthorizeImplementation": false,
+    "requiresLocalPromotion": true,
+    "providerOutputOnly": true
+  },
+  "notes": [
+    "This fixture proves the local captured-result shape only.",
+    "It is not live NotebookLM evidence.",
+    "It is not implementation authority."
+  ]
+}

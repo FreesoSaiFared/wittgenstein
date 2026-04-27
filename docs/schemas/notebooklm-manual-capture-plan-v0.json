@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://wittgenstein.local/schemas/notebooklm-manual-capture-plan-v0.json",
+  "title": "NotebookLM Manual Capture Plan v0",
+  "type": "object",
+  "required": ["schemaVersion", "provider", "mode", "experimentId", "manualGateRequired", "allowedNow", "forbiddenNow", "artifactLayout"],
+  "properties": {
+    "schemaVersion": { "const": "notebooklm-manual-capture-plan-v0" },
+    "provider": { "const": "notebooklm" },
+    "mode": { "const": "plan_only" },
+    "experimentId": { "type": "string", "minLength": 1 },
+    "manualGateRequired": { "type": "boolean", "const": true },
+    "allowedNow": { "type": "array", "items": { "type": "string" } },
+    "forbiddenNow": { "type": "array", "items": { "type": "string" } },
+    "artifactLayout": {
+      "type": "object",
+      "required": ["root", "files"],
+      "properties": {
+        "root": { "type": "string" },
+        "files": { "type": "array", "items": { "type": "string" } }
+      },
+      "additionalProperties": true
+    },
+    "authority": {
+      "type": "object",
+      "properties": {
+        "mayCreateClaims": { "type": "boolean" },
+        "mayAuthorizeImplementation": { "type": "boolean" },
+        "requiresLocalPromotion": { "type": "boolean" }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": true
+}

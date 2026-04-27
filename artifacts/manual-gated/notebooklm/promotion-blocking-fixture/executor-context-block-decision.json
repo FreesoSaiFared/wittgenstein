@@ -1,0 +1,25 @@
+{
+  "authority": {
+    "localPromotionRequired": true,
+    "providerMayAuthorizeImplementation": false,
+    "providerMayCreateClaims": false
+  },
+  "canAuthorizePatch": false,
+  "canEnterExecutorContext": false,
+  "errors": [
+    {
+      "blocking": true,
+      "code": "NOTEBOOKLM_LOCAL_PROMOTION_REQUIRED",
+      "details": {},
+      "message": "Captured NotebookLM provider evidence cannot enter executor context or patch authority without a separate local promotion artifact."
+    }
+  ],
+  "ok": false,
+  "provider": "notebooklm",
+  "providerOutputOnly": true,
+  "providerResultOk": true,
+  "providerResultStatus": "captured",
+  "requiresLocalPromotion": true,
+  "schemaVersion": "notebooklm-promotion-decision-v0",
+  "target": "executor_context"
+}

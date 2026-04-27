@@ -1,0 +1,20 @@
+{
+  "authority": {
+    "mayAuthorizeImplementation": false,
+    "mayCreateClaims": false,
+    "providerOutputOnly": true,
+    "requiresLocalPromotion": true
+  },
+  "basePath": "artifacts/manual-gated/notebooklm/promotion-decision-renderer",
+  "commandsExecuted": [],
+  "count": 2,
+  "liveNotebookLMExecuted": false,
+  "mode": "promotion_decision_paths",
+  "ok": true,
+  "paths": [
+    "artifacts/manual-gated/notebooklm/promotion-decision-renderer/executor-context-block-decision.md",
+    "artifacts/manual-gated/notebooklm/promotion-decision-renderer/patch-authority-block-decision.md"
+  ],
+  "provider": "notebooklm",
+  "schemaVersion": "notebooklm-promotion-decision-paths-v0"
+}

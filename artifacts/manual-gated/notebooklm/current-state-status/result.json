@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "notebooklm-current-state-status-v0",
+  "provider": "notebooklm",
+  "mode": "current_state_status",
+  "ok": true,
+  "liveNotebookLMExecuted": false,
+  "commandsExecuted": [],
+  "statusDocument": "docs/status/notebooklm-provider-current-state.md",
+  "currentBoundary": {
+    "providerEvidenceCanEnterExecutorContextByDefault": false,
+    "providerEvidenceCanAuthorizePatchByDefault": false,
+    "requiresLocalPromotion": true,
+    "firstFutureLiveOperation": "notebooklm list"
+  },
+  "authority": {
+    "mayCreateClaims": false,
+    "mayAuthorizeImplementation": false,
+    "requiresLocalPromotion": true,
+    "providerOutputOnly": true
+  }
+}

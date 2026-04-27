@@ -13,6 +13,14 @@ from hashlib import sha256
 from pathlib import Path, PurePosixPath
 from typing import Iterable
 
+from .notebooklm_adapter import (
+    CONTRACT_VERSION as NOTEBOOKLM_PROVIDER_RESULT_CONTRACT_VERSION,
+    build_notebooklm_provider_request,
+    run_notebooklm_provider_adapter,
+)
+from .notebooklm_provider import preflight_notebooklm_provider
+from .notebooklm_promotion_policy import evaluate_notebooklm_provider_promotion
+
 TEXT_EXTENSIONS = {
     ".md",
     ".py",
@@ -91,19 +99,56 @@ def generate_dossier(
     run_dir = workspace_root / "artifacts" / "runs" / run_id
     run_dir.mkdir(parents=True, exist_ok=True)
 
-    if provider != "local":
+    requested_out = Path(out_path)
+    if not requested_out.is_absolute():
+        requested_out = (cwd / requested_out).resolve()
+    requested_out.parent.mkdir(parents=True, exist_ok=True)
+
+    provider_metadata = _resolve_provider_metadata(provider)
+    if provider == "notebooklm":
+        provider_request = build_notebooklm_provider_request(
+            task=task,
+            run_id=run_id,
+            workspace_root=workspace_root,
+            working_directory=cwd,
+            base_git_sha=None,
+            base_source_snapshot=None,
+            source_ledger_path=run_dir / "source-ledger.json",
+            claim_ledger_path=run_dir / "claim-ledger.json",
+            requested_out_path=requested_out,
+        )
+        preflight_metadata = json.loads(json.dumps(provider_metadata, sort_keys=True))
+        adapter_result = run_notebooklm_provider_adapter(
+            request=provider_request,
+            preflight=preflight_metadata,
+        )
+        provider_metadata["contractVersion"] = NOTEBOOKLM_PROVIDER_RESULT_CONTRACT_VERSION
+        provider_metadata["adapterResult"] = adapter_result
+        provider_metadata["adapterStatus"] = adapter_result.get("status")
+        promotion_decision = evaluate_notebooklm_provider_promotion(
+            adapter_result,
+            target="executor_context",
+        )
+        provider_metadata["promotionDecision"] = promotion_decision
+        provider_metadata["plannerOnlyUntilLocalPromotion"] = not promotion_decision.get(
+            "canEnterExecutorContext",
+            False,
+        )
+    provider_error = _provider_error(provider_metadata)
+    provider_output_path = run_dir / "provider-output.md"
+
+    if provider_error is not None:
         return _write_failed_manifest(
             run_dir=run_dir,
             task=task,
             provider=provider,
-            out_path=out_path,
+            provider_metadata=provider_metadata,
+            provider_output_path=provider_output_path,
+            out_path=str(requested_out),
             workspace_root=workspace_root,
+            working_dir=cwd,
             started=started,
-            error=DossierError(
-                "NOT_IMPLEMENTED",
-                "NotebookLM provider is not implemented in dossier-core yet.",
-                details={"provider": provider},
-            ),
+            error=provider_error,
         )
 
     source_ledger = _build_source_ledger(task=task, sources=sources, cwd=cwd, max_files=max_files)
@@ -118,25 +163,27 @@ def generate_dossier(
         task=task,
         provider=provider,
         run_id=run_id,
+        provider_metadata=provider_metadata,
         source_ledger=source_ledger,
         claims=claims,
         decisions=decisions,
         workspace_root=workspace_root,
     )
-    provider_output = _render_provider_output(task=task, source_ledger=source_ledger, claims=claims)
+    provider_output = _render_provider_output(
+        task=task,
+        provider=provider,
+        provider_metadata=provider_metadata,
+        source_ledger=source_ledger,
+        claims=claims,
+    )
     planner_context = _render_planner_context(task=task, context_pack=context_pack, claims=claims)
     executor_context = _render_executor_context(task=task, context_pack=context_pack, claims=claims)
-
-    requested_out = Path(out_path)
-    if not requested_out.is_absolute():
-        requested_out = (cwd / requested_out).resolve()
-    requested_out.parent.mkdir(parents=True, exist_ok=True)
 
     _write_json(run_dir / "source-ledger.json", source_ledger)
     _write_json(run_dir / "claim-ledger.json", {"claims": claims})
     _write_json(run_dir / "codex-context-pack.json", context_pack)
     _write_json(run_dir / "patch-ledger.json", patch_template)
-    (run_dir / "provider-output.md").write_text(provider_output)
+    provider_output_path.write_text(provider_output)
     (run_dir / "planner-context.md").write_text(planner_context)
     (run_dir / "executor-context.md").write_text(executor_context)
     shutil.copyfile(run_dir / "executor-context.md", requested_out)
@@ -146,12 +193,15 @@ def generate_dossier(
         "runId": run_id,
         "task": task,
         "provider": provider,
+        "providerMetadata": provider_metadata,
+        "providerMeta": provider_metadata,
         "workspaceRoot": str(workspace_root),
         "workingDirectory": str(cwd),
         "baseGitSha": source_ledger.get("baseGitSha"),
         "baseSourceSnapshot": source_ledger["baseSourceSnapshot"],
         "requestedOutPath": str(requested_out),
         "artifactPath": str(run_dir / "executor-context.md"),
+        "providerOutputPath": str(provider_output_path),
         "plannerContextPath": str(run_dir / "planner-context.md"),
         "contextPackPath": str(run_dir / "codex-context-pack.json"),
         "claimLedgerPath": str(run_dir / "claim-ledger.json"),
@@ -161,7 +211,7 @@ def generate_dossier(
         "durationMs": duration_ms,
         "ok": True,
         "error": None,
-        "notebooklm": {"status": "not_implemented"},
+        "notebooklm": _legacy_notebooklm_status(provider_metadata),
     }
     _write_json(run_dir / "manifest.json", manifest)
     return {
@@ -172,11 +222,13 @@ def generate_dossier(
         "base_source_snapshot": source_ledger["baseSourceSnapshot"],
         "base_git_sha": source_ledger.get("baseGitSha"),
         "manifest_path": str(run_dir / "manifest.json"),
+        "provider_output_path": str(provider_output_path),
         "artifact_path": str(run_dir / "executor-context.md"),
         "planner_context_path": str(run_dir / "planner-context.md"),
         "executor_context_path": str(run_dir / "executor-context.md"),
+        "provider_meta": provider_metadata,
+        "error": None,
     }
-
 
 def replay_dossier(run_dir: str, *, out_path: str | None = None) -> dict:
     run_path = Path(run_dir).resolve()
@@ -659,6 +711,7 @@ def _build_context_pack(
     task: str,
     provider: str,
     run_id: str,
+    provider_metadata: dict,
     source_ledger: dict,
     claims: list[dict],
     decisions: list[dict],
@@ -667,6 +720,7 @@ def _build_context_pack(
     return {
         "task": task,
         "provider": provider,
+        "providerMetadata": provider_metadata,
         "runId": run_id,
         "workspaceRoot": str(workspace_root),
         "baseGitSha": source_ledger.get("baseGitSha"),
@@ -705,25 +759,99 @@ def _build_context_pack(
     }
 
 
-def _render_provider_output(*, task: str, source_ledger: dict, claims: list[dict]) -> str:
+def _render_provider_output(
+    *,
+    task: str,
+    provider: str,
+    provider_metadata: dict,
+    source_ledger: dict | None = None,
+    claims: list[dict] | None = None,
+) -> str:
     lines = [
         "# Provider Output",
         "",
-        f"- Task: {task}",
-        f"- Base source snapshot: `{source_ledger['baseSourceSnapshot']}`",
-        "",
-        "## Selected sources",
+        f"Task: {task}",
+        f"Provider: {provider}",
+        f"Status: {provider_metadata['status']}",
     ]
-    for source in source_ledger["selectedSources"]:
-        lines.append(f"- `{source['sourceId']}` {source['path']} ({source['kind']})")
-        for snippet in source["snippets"]:
-            lines.append(f"  - `{snippet['snippetId']}` lines {snippet['lineStart']}-{snippet['lineEnd']}: {snippet['text']}")
+    mode = provider_metadata.get("mode")
+    if mode:
+        lines.append(f"Mode: {mode}")
+    reason = provider_metadata.get("reason")
+    if reason:
+        lines.append(f"Reason: {reason}")
+    smoke_command = provider_metadata.get("safeSmokeCommand")
+    if smoke_command:
+        lines.append(f"Safe smoke command: {smoke_command}")
+    else:
+        lines.append("Safe smoke command: none detected")
+
     lines.append("")
-    lines.append("## Claims")
-    for claim in claims:
-        lines.append(
-            f"- `{claim['claimId']}` [{claim['authorityClass']}/{claim['status']}] {claim['text']}"
-        )
+    lines.append("## Raw provider metadata")
+    lines.append(json.dumps(provider_metadata, indent=2, sort_keys=True))
+
+    adapter_result = provider_metadata.get("adapterResult")
+    if adapter_result:
+        lines.extend([
+            "",
+            "## Adapter skeleton result",
+            f"- Contract: `{adapter_result.get('contractVersion')}`",
+            f"- Status: {adapter_result.get('status')}",
+            f"- OK: {adapter_result.get('ok')}",
+            f"- Capture mode: `{adapter_result.get('capture', {}).get('mode')}`",
+            "- Authority:",
+            f"  - May create claims: {adapter_result.get('authority', {}).get('mayCreateClaims')}",
+            f"  - May authorize implementation: {adapter_result.get('authority', {}).get('mayAuthorizeImplementation')}",
+            f"  - Requires local promotion: {adapter_result.get('authority', {}).get('requiresLocalPromotion')}",
+        ])
+        adapter_errors = adapter_result.get("errors", [])
+        if adapter_errors:
+            lines.append("- Adapter/preflight errors:")
+            for error in adapter_errors:
+                lines.append(f"  - `{error.get('code')}` {error.get('message')}")
+
+    promotion_decision = provider_metadata.get("promotionDecision")
+    if promotion_decision:
+        lines.extend([
+            "",
+            "## Promotion policy decision",
+            f"- Target: `{promotion_decision.get('target')}`",
+            f"- OK: {promotion_decision.get('ok')}",
+            f"- Can enter executor context: {promotion_decision.get('canEnterExecutorContext')}",
+            f"- Can authorize patch: {promotion_decision.get('canAuthorizePatch')}",
+            f"- Requires local promotion: {promotion_decision.get('requiresLocalPromotion')}",
+        ])
+        promotion_errors = promotion_decision.get("errors", [])
+        if promotion_errors:
+            lines.append("- Promotion errors:")
+            for error in promotion_errors:
+                lines.append(f"  - `{error.get('code')}` {error.get('message')}")
+
+    if source_ledger is not None:
+        lines.extend([
+            "",
+            f"Base source snapshot: {source_ledger['baseSourceSnapshot']}",
+            "",
+            "## Selected sources",
+        ])
+        for source in source_ledger["selectedSources"]:
+            lines.append(f"- `{source['sourceId']}` {source['path']} ({source['kind']})")
+            for snippet in source["snippets"]:
+                lines.append(f"  - `{snippet['snippetId']}` lines {snippet['lineStart']}-{snippet['lineEnd']}: {snippet['text']}")
+
+    if claims is not None:
+        lines.append("")
+        lines.append("## Claims")
+        for claim in claims:
+            lines.append(
+                f"- `{claim['claimId']}` [{claim['authorityClass']}/{claim['status']}] {claim['text']}"
+            )
+    errors = provider_metadata.get("errors", [])
+    if errors:
+        lines.append("")
+        lines.append("## Preflight errors")
+        for error in errors:
+            lines.append(f"- `{error['code']}` {error['message']}")
     lines.append("")
     return "\n".join(lines)
 
@@ -792,30 +920,46 @@ def _write_failed_manifest(
     run_dir: Path,
     task: str,
     provider: str,
+    provider_metadata: dict,
+    provider_output_path: Path,
     out_path: str,
     workspace_root: Path,
+    working_dir: Path,
     started: float,
     error: DossierError,
 ) -> dict:
+    provider_output_path.write_text(
+        _render_provider_output(
+            task=task,
+            provider=provider,
+            provider_metadata=provider_metadata,
+        )
+    )
     manifest = {
         "runId": run_dir.name,
         "task": task,
         "provider": provider,
+        "providerMetadata": provider_metadata,
+        "providerMeta": provider_metadata,
         "workspaceRoot": str(workspace_root),
+        "workingDirectory": str(working_dir),
         "requestedOutPath": out_path,
+        "providerOutputPath": str(provider_output_path),
         "startedAt": _utc_now(),
         "durationMs": int((time.time() - started) * 1000),
         "ok": False,
         "error": error.to_error(),
-        "notebooklm": {"status": "not_implemented"},
+        "notebooklm": _legacy_notebooklm_status(provider_metadata),
     }
     _write_json(run_dir / "manifest.json", manifest)
     return {
         "ok": False,
         "provider": provider,
+        "provider_meta": provider_metadata,
         "run_dir": str(run_dir),
         "error": error.to_error(),
         "manifest_path": str(run_dir / "manifest.json"),
+        "provider_output_path": str(provider_output_path),
     }
 
 
@@ -834,6 +978,73 @@ def _new_run_id() -> str:
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _resolve_provider_metadata(provider: str) -> dict:
+    if provider == "local":
+        return {
+            "provider": "local",
+            "status": "available",
+            "mode": "deterministic_local",
+            "reason": "Local dossier backend is bundled with dossier-core.",
+            "safeSmokeCommand": None,
+            "moduleChecks": [],
+            "matchingDistributions": [],
+            "cliCandidates": [],
+        }
+    if provider == "notebooklm":
+        return _detect_notebooklm_environment()
+    return {
+        "provider": provider,
+        "status": "unsupported",
+        "mode": "unknown",
+        "reason": f"Unsupported dossier provider '{provider}'.",
+        "safeSmokeCommand": None,
+        "moduleChecks": [],
+        "matchingDistributions": [],
+        "cliCandidates": [],
+    }
+
+
+def _provider_error(provider_metadata: dict) -> DossierError | None:
+    provider = provider_metadata["provider"]
+    if provider == "local" and provider_metadata["status"] == "available":
+        return None
+    if provider == "notebooklm":
+        status = provider_metadata.get("status")
+        if status == "not_ready":
+            return DossierError(
+                "PROVIDER_NOT_READY",
+                "NotebookLM provider preflight detected tooling, but the adapter is not ready.",
+                details=provider_metadata,
+            )
+        return DossierError(
+            "PROVIDER_UNAVAILABLE",
+            "NotebookLM provider is recognized but unavailable in this environment.",
+            details=provider_metadata,
+        )
+    return DossierError(
+        "UNSUPPORTED_PROVIDER",
+        f"Unsupported dossier provider '{provider}'.",
+        details=provider_metadata,
+    )
+
+
+def _detect_notebooklm_environment() -> dict:
+    return preflight_notebooklm_provider()
+
+
+def _detect_notebooklm_provider() -> dict:
+    return _detect_notebooklm_environment()
+
+
+def _legacy_notebooklm_status(provider_metadata: dict) -> dict:
+    if provider_metadata["provider"] != "notebooklm":
+        return {"status": "not_requested"}
+    return {
+        "status": provider_metadata["status"],
+        "safeSmokeCommand": provider_metadata.get("safeSmokeCommand"),
+    }
 
 
 def _keywords(task: str) -> list[str]:

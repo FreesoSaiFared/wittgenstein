@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "notebooklm-live-runner-dry-harness-v0",
+  "provider": "notebooklm",
+  "mode": "live_runner_dry_harness",
+  "status": "would_execute_but_stubbed",
+  "ok": true,
+  "experimentId": "live-runner-dry-harness",
+  "requestedOperation": "readonly-list",
+  "wouldExecuteCommand": "notebooklm list",
+  "manualGatePresent": true,
+  "notebooklmHomePresent": true,
+  "readonlyEnablePresent": true,
+  "liveEnablePresent": true,
+  "liveNotebookLMExecuted": false,
+  "commandsExecuted": [],
+  "errors": [{"code":"NOTEBOOKLM_LIVE_EXECUTION_STUBBED","message":"The final live-execution gate is present, but this dry harness still does not execute NotebookLM.","blocking":false,"details":{"nextLane":"replace stub with one-command execution after explicit approval"}}],
+  "authority": {
+    "mayCreateClaims": false,
+    "mayAuthorizeImplementation": false,
+    "requiresLocalPromotion": true,
+    "providerOutputOnly": true
+  }
+}
