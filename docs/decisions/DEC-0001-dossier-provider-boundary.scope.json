@@ -45,7 +45,7 @@
     "This is the current Level A hard gate.",
     "OMX hooks remain warnings/sentries only.",
     "Python top-level function/class/import additions or modifications must be accounted for in patch-ledger.json symbols[].",
-    "Allowed glob patterns are matched conservatively and do not imply nested subtree authorization unless the pattern explicitly says so.",
+    "Allowed glob patterns are matched conservatively from the repository root and do not imply nested subtree or suffix-path authorization unless the pattern explicitly says so.",
     "Forbidden trailing slash-star patterns such as packages/* and apps/* quarantine descendants.",
     "Level B PatchPlanIR is a future target and is not wired into execution yet."
   ]

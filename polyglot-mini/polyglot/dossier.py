@@ -1153,7 +1153,7 @@ def _path_matches_scope_pattern(file_path: str, pattern: str, *, subtree_trailin
         prefix = normalized_pattern[:-1]
         return normalized_path.startswith(prefix)
 
-    return PurePosixPath(normalized_path).match(normalized_pattern)
+    return PurePosixPath(f"/{normalized_path}").match(f"/{normalized_pattern}")
 
 
 def _requires_symbol_accounting(file_path: str, scopes: list[dict]) -> bool:

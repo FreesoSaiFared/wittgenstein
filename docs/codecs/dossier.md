@@ -42,7 +42,7 @@ local files
 - For Python files under Level A scope, the gate also inspects added/modified top-level imports, functions, and classes, and requires `patch-ledger.json` to account for those symbols.
 - DEC sidecars may forbid higher-level capabilities (for example network access) in addition to raw imports/strings.
 - OMX hooks are warnings/sentries only; they are not the enforcement boundary.
-- Path matching is conservative: allowed globs such as `polyglot/*.py` do not authorize nested subdirectories, while forbidden subtree globs such as `packages/*` quarantine descendants.
+- Path matching is conservative and repo-root anchored: allowed globs such as `polyglot/*.py` do not authorize nested subdirectories or suffix matches such as `outside/polyglot/*.py`, while forbidden subtree globs such as `packages/*` quarantine descendants.
 
 ## Authority classes
 

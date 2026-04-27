@@ -224,6 +224,35 @@ class DossierTests(unittest.TestCase):
         self.assertFalse(verification["ok"], verification)
         self.assertEqual(verification["error"]["code"], "PATCH_SCOPE_VIOLATION")
 
+    def test_level_a_gate_rejects_suffix_path_that_allowed_glob_does_not_anchor(self) -> None:
+        result = self._generate()
+        run_dir = Path(result["run_dir"])
+        ledger = self._ledger(run_dir)
+        impl_claim = next(claim for claim in ledger["claims"] if claim["authorityClass"] == "implementation_fact")
+
+        (self.root / "outside" / "polyglot").mkdir(parents=True)
+        (self.root / "outside" / "polyglot" / "hidden.py").write_text("SUFFIX_MATCH = True\n")
+        self._write_patch_ledger(
+            run_dir,
+            result,
+            changes=[
+                {
+                    "file": "outside/polyglot/hidden.py",
+                    "hunks": [
+                        {
+                            "hunkId": "HUNK-001C",
+                            "claimIds": [impl_claim["claimId"]],
+                            "decisionIds": ["DEC-0001"],
+                        }
+                    ],
+                }
+            ],
+        )
+
+        verification = verify_patch_authority(run_dir=str(run_dir), repository_root=str(self.root))
+        self.assertFalse(verification["ok"], verification)
+        self.assertEqual(verification["error"]["code"], "PATCH_SCOPE_VIOLATION")
+
     def test_level_a_gate_rejects_nested_forbidden_path(self) -> None:
         result = self._generate()
         run_dir = Path(result["run_dir"])
@@ -240,7 +269,7 @@ class DossierTests(unittest.TestCase):
                     "file": "packages/nested/other.ts",
                     "hunks": [
                         {
-                            "hunkId": "HUNK-001C",
+                            "hunkId": "HUNK-001D",
                             "claimIds": [impl_claim["claimId"]],
                             "decisionIds": ["DEC-0001"],
                         }
