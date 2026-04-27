@@ -4,12 +4,7 @@
   "title": "PatchPlanIR v0 (future target only)",
   "description": "Minimal future-target schema for a Level B patch-plan compiler. This schema is documentation only and is not the current execution path.",
   "type": "object",
-  "required": [
-    "version",
-    "status",
-    "baseContext",
-    "operations"
-  ],
+  "required": ["version", "status", "baseContext", "operations"],
   "properties": {
     "version": {
       "const": "0.1.0"
@@ -19,11 +14,7 @@
     },
     "baseContext": {
       "type": "object",
-      "required": [
-        "runId",
-        "baseGitSha",
-        "baseSourceSnapshot"
-      ],
+      "required": ["runId", "baseGitSha", "baseSourceSnapshot"],
       "properties": {
         "runId": { "type": "string" },
         "baseGitSha": { "type": ["string", "null"] },
@@ -35,11 +26,7 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": [
-          "opId",
-          "target",
-          "authority"
-        ],
+        "required": ["opId", "target", "authority"],
         "properties": {
           "opId": { "type": "string" },
           "target": {

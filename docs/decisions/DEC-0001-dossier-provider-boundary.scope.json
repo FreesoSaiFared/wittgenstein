@@ -13,38 +13,19 @@
     "docs/codecs/dossier.md",
     "docs/schemas/patch-plan-ir-v0.json"
   ],
-  "forbiddenPaths": [
-    "packages/*",
-    "apps/*"
-  ],
-  "forbiddenImports": [
-    "notebooklm",
-    "notebooklm_py",
-    "repomix"
-  ],
+  "forbiddenPaths": ["packages/*", "apps/*"],
+  "forbiddenImports": ["notebooklm", "notebooklm_py", "repomix"],
   "symbolAccounting": {
     "required": true,
     "language": "python",
-    "topLevelKinds": [
-      "function",
-      "class",
-      "import"
-    ],
+    "topLevelKinds": ["function", "class", "import"],
     "mode": "added_or_modified"
   },
-  "forbiddenStrings": [
-    "design_inference"
-  ],
+  "forbiddenStrings": ["design_inference"],
   "forbiddenCapabilities": [
     {
       "name": "network_access",
-      "pythonImports": [
-        "requests",
-        "httpx",
-        "aiohttp",
-        "socket",
-        "urllib.request"
-      ],
+      "pythonImports": ["requests", "httpx", "aiohttp", "socket", "urllib.request"],
       "pythonCalls": [
         "requests.get",
         "requests.post",
@@ -56,14 +37,8 @@
     },
     {
       "name": "notebooklm_runtime",
-      "pythonImports": [
-        "notebooklm",
-        "notebooklm_py"
-      ],
-      "pythonCalls": [
-        "notebooklm.Client",
-        "notebooklm_py.Client"
-      ]
+      "pythonImports": ["notebooklm", "notebooklm_py"],
+      "pythonCalls": ["notebooklm.Client", "notebooklm_py.Client"]
     }
   ],
   "notes": [
