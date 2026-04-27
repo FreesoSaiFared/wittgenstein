@@ -105,6 +105,7 @@ Passing checks from the post-merge integration pass:
 
 - Full `pnpm build` still fails in `apps/site` because React and React-DOM versions are mismatched:
   `react-dom@19.2.5` is installed against `react@18.3.1`.
+- PR #34 is mergeable, but GitHub Actions did not start required CI jobs because the GitHub account is locked due to a billing issue. This is an external CI availability blocker, not a local test failure.
 
 ## Suggested PR checklist state
 
