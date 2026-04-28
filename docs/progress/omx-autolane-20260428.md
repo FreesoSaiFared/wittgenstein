@@ -17,6 +17,8 @@ Explicit keywords are the deterministic activation surface. The installed keywor
 
 Default safety is conservative: it stops on dirty worktrees, missing status, no clear next lane, force-push/merge/rebase needs, NotebookLM-provider before dossier-core acceptance, external auth/billing/CI blockers, a `.omx/lane/STOP` file, or max iteration exhaustion. Pushing requires `--allow-push`; merging/rebasing and NotebookLM-provider planning require their own explicit flags.
 
+The child `omx exec` call passes `--dangerously-bypass-approvals-and-sandbox` by default because this host's Codex workspace sandbox can fail before shell execution with bubblewrap UID-map errors. The wrapper still keeps its own lane hard stops. Use `--codex-workspace-sandbox` to opt back into the default Codex sandbox, or set `TARSKI_AUTOLANE_OMX_EXEC_ARGS` to override the child `omx exec` flags.
+
 ## Usage
 
 Dry-run the next generated prompt:
@@ -35,6 +37,12 @@ Run the remote-CI continuation lane when pushing the existing PR branch is expli
 
 ```bash
 scripts/tarski-autolane.sh --allow-push --max-iterations 3
+```
+
+Run with the default Codex workspace sandbox instead of the host-specific bypass:
+
+```bash
+scripts/tarski-autolane.sh --codex-workspace-sandbox --allow-push --max-iterations 3
 ```
 
 Stop a running loop cleanly before the next cycle:

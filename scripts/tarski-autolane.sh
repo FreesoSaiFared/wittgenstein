@@ -17,6 +17,7 @@ Options:
   --allow-merge                Permit prompts that may merge a PR (default: hard stop).
   --allow-rebase               Permit prompts that may rebase (default: hard stop).
   --allow-notebooklm-provider  Permit planning the NotebookLM-provider lane after acceptance/merge.
+  --codex-workspace-sandbox    Do not pass the default child-Codex sandbox bypass flag.
   --allow-dirty                Bypass dirty-worktree hard stop (for dry-run/testing only).
   -h, --help                   Show this help.
 
@@ -39,6 +40,7 @@ ALLOW_NOTEBOOKLM_PROVIDER=0
 ALLOW_DIRTY=0
 MAX_ITERATIONS="${TARSKI_AUTOLANE_MAX_ITERATIONS:-3}"
 OMX_BIN="${OMX_BIN:-omx}"
+OMX_EXEC_ARGS_TEXT="${TARSKI_AUTOLANE_OMX_EXEC_ARGS:---dangerously-bypass-approvals-and-sandbox}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -52,6 +54,7 @@ while [[ $# -gt 0 ]]; do
     --allow-merge) ALLOW_MERGE=1 ;;
     --allow-rebase) ALLOW_REBASE=1 ;;
     --allow-notebooklm-provider) ALLOW_NOTEBOOKLM_PROVIDER=1 ;;
+    --codex-workspace-sandbox) OMX_EXEC_ARGS_TEXT="" ;;
     --allow-dirty) ALLOW_DIRTY=1 ;;
     -h|--help) usage; exit 0 ;;
     *) echo "[tarski-autolane] unknown argument: $1" >&2; usage >&2; exit 2 ;;
@@ -289,12 +292,20 @@ run_cycle() {
     return 0
   fi
   set +e
-  "$OMX_BIN" exec --output-last-message "$last_file" "$prompt" 2>&1 | tee "$log_file"
+  local omx_exec_args=()
+  if [[ -n "$OMX_EXEC_ARGS_TEXT" ]]; then
+    read -r -a omx_exec_args <<< "$OMX_EXEC_ARGS_TEXT"
+  fi
+  "$OMX_BIN" exec "${omx_exec_args[@]}" --output-last-message "$last_file" "$prompt" 2>&1 | tee "$log_file"
   rc=${PIPESTATUS[0]}
   set -e
   if [[ "$rc" -ne 0 ]]; then
     echo "[tarski-autolane] HARD STOP: omx exec failed with exit code $rc; log=$log_file" >&2
     return "$rc"
+  fi
+  if grep -qiE 'HARD STOP|REMOTE REVIEW-READY:[[:space:]]*no|Blocker:' "$last_file" "$log_file" 2>/dev/null; then
+    echo "[tarski-autolane] HARD STOP: worker reported a stop/blocker; log=$log_file last=$last_file"
+    return 20
   fi
   require_clean_worktree || return 10
   return 0
