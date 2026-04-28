@@ -164,6 +164,31 @@ class DossierTests(unittest.TestCase):
         self.assertRegex(provider_output, r"Status: (unavailable|not_ready)")
         self.assertIn("NOTEBOOKLM_READY_UNVERIFIED", provider_output)
 
+        expected_artifacts = {
+            "source-ledger.json": "sourceLedgerPath",
+            "claim-ledger.json": "claimLedgerPath",
+            "codex-context-pack.json": "contextPackPath",
+            "planner-context.md": "plannerContextPath",
+            "executor-context.md": "artifactPath",
+            "patch-ledger.json": "patchLedgerPath",
+            "manifest.json": None,
+            "provider-output.md": "providerOutputPath",
+        }
+        for filename, manifest_key in expected_artifacts.items():
+            self.assertTrue((run_dir / filename).exists(), filename)
+            if manifest_key:
+                self.assertEqual(manifest[manifest_key], str(run_dir / filename))
+
+        executor_text = (run_dir / "executor-context.md").read_text()
+        self.assertNotIn("NOTEBOOKLM_READY_UNVERIFIED", executor_text)
+        self.assertNotIn("design_inference", executor_text)
+
+        replay_out = self.root / "replayed-notebooklm" / "executor-context.md"
+        with mock.patch("polyglot.dossier._detect_notebooklm_environment", side_effect=AssertionError("replay should stay offline")):
+            replay = replay_dossier(str(run_dir), out_path=str(replay_out))
+        self.assertTrue(replay["ok"], replay)
+        self.assertEqual(replay_out.read_text(), executor_text)
+
     def test_notebooklm_preflight_reports_missing_package_and_cli_without_crashing(self) -> None:
         with mock.patch("polyglot.notebooklm_provider.importlib.util.find_spec", return_value=None), mock.patch(
             "polyglot.notebooklm_provider.importlib.metadata.distributions", return_value=[]
@@ -425,6 +450,190 @@ class DossierTests(unittest.TestCase):
         verification = verify_patch_authority(run_dir=str(run_dir), repository_root=str(self.root))
         self.assertFalse(verification["ok"], verification)
         self.assertEqual(verification["error"]["code"], "PATCH_SCOPE_VIOLATION")
+        self.assertTrue(
+            any(
+                violation.get("reason") == "forbidden_capability"
+                and violation.get("capability") == "network_access"
+                for violation in verification["error"]["details"]["violations"]
+            ),
+            verification,
+        )
+
+    def test_level_a_gate_rejects_forbidden_capability_from_requests_import(self) -> None:
+        result = self._generate()
+        run_dir = Path(result["run_dir"])
+        ledger = self._ledger(run_dir)
+        impl_claim = next(claim for claim in ledger["claims"] if claim["authorityClass"] == "implementation_fact")
+
+        (self.root / "polyglot" / "dossier.py").write_text(
+            "from requests import get\n\n"
+            "def fetch_remote_status():\n"
+            '    return get("https://example.com/status").status_code\n'
+        )
+        self._write_patch_ledger(
+            run_dir,
+            result,
+            changes=[
+                {
+                    "file": "polyglot/dossier.py",
+                    "symbols": [
+                        {"kind": "import", "name": "requests.get"},
+                        {"kind": "function", "name": "fetch_remote_status"},
+                    ],
+                    "hunks": [
+                        {
+                            "hunkId": "HUNK-002C",
+                            "claimIds": [impl_claim["claimId"]],
+                            "decisionIds": ["DEC-0001"],
+                        }
+                    ],
+                }
+            ],
+        )
+
+        verification = verify_patch_authority(run_dir=str(run_dir), repository_root=str(self.root))
+        self.assertFalse(verification["ok"], verification)
+        self.assertEqual(verification["error"]["code"], "PATCH_SCOPE_VIOLATION")
+        self.assertTrue(
+            any(
+                violation.get("reason") == "forbidden_capability"
+                and violation.get("capability") == "network_access"
+                for violation in verification["error"]["details"]["violations"]
+            ),
+            verification,
+        )
+
+    def test_level_a_gate_rejects_forbidden_capability_import_alias(self) -> None:
+        result = self._generate()
+        run_dir = Path(result["run_dir"])
+        ledger = self._ledger(run_dir)
+        impl_claim = next(claim for claim in ledger["claims"] if claim["authorityClass"] == "implementation_fact")
+
+        (self.root / "polyglot" / "dossier.py").write_text(
+            "import requests as rq\n\n"
+            "def fetch_remote_status():\n"
+            '    return rq.get("https://example.com/status").status_code\n'
+        )
+        self._write_patch_ledger(
+            run_dir,
+            result,
+            changes=[
+                {
+                    "file": "polyglot/dossier.py",
+                    "symbols": [
+                        {"kind": "import", "name": "requests"},
+                        {"kind": "function", "name": "fetch_remote_status"},
+                    ],
+                    "hunks": [
+                        {
+                            "hunkId": "HUNK-002D",
+                            "claimIds": [impl_claim["claimId"]],
+                            "decisionIds": ["DEC-0001"],
+                        }
+                    ],
+                }
+            ],
+        )
+
+        verification = verify_patch_authority(run_dir=str(run_dir), repository_root=str(self.root))
+        self.assertFalse(verification["ok"], verification)
+        self.assertEqual(verification["error"]["code"], "PATCH_SCOPE_VIOLATION")
+        self.assertTrue(
+            any(
+                violation.get("reason") == "forbidden_capability"
+                and violation.get("capability") == "network_access"
+                for violation in verification["error"]["details"]["violations"]
+            ),
+            verification,
+        )
+
+    def test_level_a_gate_rejects_forbidden_capability_urllib_from_import(self) -> None:
+        result = self._generate()
+        run_dir = Path(result["run_dir"])
+        ledger = self._ledger(run_dir)
+        impl_claim = next(claim for claim in ledger["claims"] if claim["authorityClass"] == "implementation_fact")
+
+        (self.root / "polyglot" / "dossier.py").write_text(
+            "from urllib.request import urlopen\n\n"
+            "def fetch_remote_status():\n"
+            '    return urlopen("https://example.com/status").status\n'
+        )
+        self._write_patch_ledger(
+            run_dir,
+            result,
+            changes=[
+                {
+                    "file": "polyglot/dossier.py",
+                    "symbols": [
+                        {"kind": "import", "name": "urllib.request.urlopen"},
+                        {"kind": "function", "name": "fetch_remote_status"},
+                    ],
+                    "hunks": [
+                        {
+                            "hunkId": "HUNK-002E",
+                            "claimIds": [impl_claim["claimId"]],
+                            "decisionIds": ["DEC-0001"],
+                        }
+                    ],
+                }
+            ],
+        )
+
+        verification = verify_patch_authority(run_dir=str(run_dir), repository_root=str(self.root))
+        self.assertFalse(verification["ok"], verification)
+        self.assertEqual(verification["error"]["code"], "PATCH_SCOPE_VIOLATION")
+        self.assertTrue(
+            any(
+                violation.get("reason") == "forbidden_capability"
+                and violation.get("capability") == "network_access"
+                for violation in verification["error"]["details"]["violations"]
+            ),
+            verification,
+        )
+
+    def test_level_a_gate_rejects_forbidden_capability_socket_from_import(self) -> None:
+        result = self._generate()
+        run_dir = Path(result["run_dir"])
+        ledger = self._ledger(run_dir)
+        impl_claim = next(claim for claim in ledger["claims"] if claim["authorityClass"] == "implementation_fact")
+
+        (self.root / "polyglot" / "dossier.py").write_text(
+            "from socket import socket\n\n"
+            "def open_socket():\n"
+            "    return socket()\n"
+        )
+        self._write_patch_ledger(
+            run_dir,
+            result,
+            changes=[
+                {
+                    "file": "polyglot/dossier.py",
+                    "symbols": [
+                        {"kind": "import", "name": "socket.socket"},
+                        {"kind": "function", "name": "open_socket"},
+                    ],
+                    "hunks": [
+                        {
+                            "hunkId": "HUNK-002F",
+                            "claimIds": [impl_claim["claimId"]],
+                            "decisionIds": ["DEC-0001"],
+                        }
+                    ],
+                }
+            ],
+        )
+
+        verification = verify_patch_authority(run_dir=str(run_dir), repository_root=str(self.root))
+        self.assertFalse(verification["ok"], verification)
+        self.assertEqual(verification["error"]["code"], "PATCH_SCOPE_VIOLATION")
+        self.assertTrue(
+            any(
+                violation.get("reason") == "forbidden_capability"
+                and violation.get("capability") == "network_access"
+                for violation in verification["error"]["details"]["violations"]
+            ),
+            verification,
+        )
 
     def test_level_a_gate_rejects_unaccounted_file(self) -> None:
         result = self._generate()

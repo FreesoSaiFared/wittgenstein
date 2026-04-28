@@ -134,22 +134,8 @@ def generate_dossier(
             "canEnterExecutorContext",
             False,
         )
-    provider_error = _provider_error(provider_metadata)
     provider_output_path = run_dir / "provider-output.md"
-
-    if provider_error is not None:
-        return _write_failed_manifest(
-            run_dir=run_dir,
-            task=task,
-            provider=provider,
-            provider_metadata=provider_metadata,
-            provider_output_path=provider_output_path,
-            out_path=str(requested_out),
-            workspace_root=workspace_root,
-            working_dir=cwd,
-            started=started,
-            error=provider_error,
-        )
+    provider_error = _provider_error(provider_metadata)
 
     source_ledger = _build_source_ledger(task=task, sources=sources, cwd=cwd, max_files=max_files)
     claims = _build_claims(task=task, source_ledger=source_ledger)
@@ -187,6 +173,22 @@ def generate_dossier(
     (run_dir / "planner-context.md").write_text(planner_context)
     (run_dir / "executor-context.md").write_text(executor_context)
     shutil.copyfile(run_dir / "executor-context.md", requested_out)
+
+    if provider_error is not None:
+        return _write_failed_manifest(
+            run_dir=run_dir,
+            task=task,
+            provider=provider,
+            provider_metadata=provider_metadata,
+            provider_output_path=provider_output_path,
+            out_path=str(requested_out),
+            workspace_root=workspace_root,
+            working_dir=cwd,
+            started=started,
+            error=provider_error,
+            source_ledger=source_ledger,
+            claims=claims,
+        )
 
     duration_ms = int((time.time() - started) * 1000)
     manifest = {
@@ -927,12 +929,16 @@ def _write_failed_manifest(
     working_dir: Path,
     started: float,
     error: DossierError,
+    source_ledger: dict | None = None,
+    claims: list[dict] | None = None,
 ) -> dict:
     provider_output_path.write_text(
         _render_provider_output(
             task=task,
             provider=provider,
             provider_metadata=provider_metadata,
+            source_ledger=source_ledger,
+            claims=claims,
         )
     )
     manifest = {
@@ -951,8 +957,21 @@ def _write_failed_manifest(
         "error": error.to_error(),
         "notebooklm": _legacy_notebooklm_status(provider_metadata),
     }
+    if source_ledger is not None:
+        manifest.update(
+            {
+                "baseGitSha": source_ledger.get("baseGitSha"),
+                "baseSourceSnapshot": source_ledger["baseSourceSnapshot"],
+                "artifactPath": str(run_dir / "executor-context.md"),
+                "plannerContextPath": str(run_dir / "planner-context.md"),
+                "contextPackPath": str(run_dir / "codex-context-pack.json"),
+                "claimLedgerPath": str(run_dir / "claim-ledger.json"),
+                "sourceLedgerPath": str(run_dir / "source-ledger.json"),
+                "patchLedgerPath": str(run_dir / "patch-ledger.json"),
+            }
+        )
     _write_json(run_dir / "manifest.json", manifest)
-    return {
+    result = {
         "ok": False,
         "provider": provider,
         "provider_meta": provider_metadata,
@@ -961,6 +980,18 @@ def _write_failed_manifest(
         "manifest_path": str(run_dir / "manifest.json"),
         "provider_output_path": str(provider_output_path),
     }
+    if source_ledger is not None:
+        result.update(
+            {
+                "out_path": out_path,
+                "base_source_snapshot": source_ledger["baseSourceSnapshot"],
+                "base_git_sha": source_ledger.get("baseGitSha"),
+                "artifact_path": str(run_dir / "executor-context.md"),
+                "planner_context_path": str(run_dir / "planner-context.md"),
+                "executor_context_path": str(run_dir / "executor-context.md"),
+            }
+        )
+    return result
 
 
 def _find_workspace_root(start: Path) -> Path:
@@ -1402,7 +1433,7 @@ def _scan_added_lines(*, file_path: str, added_lines: list[str], scopes: list[di
         for rule in forbidden_capabilities:
             capability = rule.get("name", "unknown_capability")
             for token in rule.get("pythonImports", []):
-                if token and token in ast_details["imports"]:
+                if token and any(_python_name_matches(imported, token) for imported in ast_details["imports"]):
                     violations.append(
                         {
                             "file": file_path,
@@ -1467,10 +1498,13 @@ def _python_ast_details(source_text: str | None) -> dict:
     symbols: list[dict] = []
     imports: set[str] = set()
     calls: set[str] = set()
+    import_aliases: dict[str, str] = {}
 
     for node in tree.body:
         if isinstance(node, ast.Import):
             for alias in node.names:
+                local_name = alias.asname or alias.name.split(".", 1)[0]
+                import_aliases[local_name] = alias.name
                 symbol = {
                     "kind": "import",
                     "name": alias.name,
@@ -1480,8 +1514,12 @@ def _python_ast_details(source_text: str | None) -> dict:
                 imports.add(alias.name)
         elif isinstance(node, ast.ImportFrom):
             module = node.module or ""
+            if module:
+                imports.add(module)
             for alias in node.names:
                 imported = f"{module}.{alias.name}" if module else alias.name
+                local_name = alias.asname or alias.name
+                import_aliases[local_name] = imported
                 symbol = {
                     "kind": "import",
                     "name": imported,
@@ -1502,8 +1540,23 @@ def _python_ast_details(source_text: str | None) -> dict:
         call_name = _call_name(node.func)
         if call_name:
             calls.add(call_name)
+            resolved_call_name = _resolve_import_alias_call(call_name, import_aliases)
+            if resolved_call_name:
+                calls.add(resolved_call_name)
 
     return {"symbols": symbols, "imports": imports, "calls": calls}
+
+
+def _python_name_matches(candidate: str, token: str) -> bool:
+    return candidate == token or candidate.startswith(f"{token}.")
+
+
+def _resolve_import_alias_call(call_name: str, import_aliases: dict[str, str]) -> str | None:
+    head, separator, tail = call_name.partition(".")
+    target = import_aliases.get(head)
+    if not target:
+        return None
+    return f"{target}{separator}{tail}" if separator else target
 
 
 def _call_name(node: ast.AST) -> str | None:
