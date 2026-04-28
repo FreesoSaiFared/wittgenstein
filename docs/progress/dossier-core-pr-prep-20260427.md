@@ -45,6 +45,10 @@ Integration commits added after PR creation:
 7. `9db279a` — Bring original upstream doctrine and codec updates into dossier lane
 8. `7d0129b` — Keep dossier review handoff current after upstream integration
 9. `c73f211` — Record external PR CI blocker in dossier handoff
+10. `9d43ab9` — Fix dossier authority review findings
+
+Final local review-hardening after `9d43ab9` keeps the same authority boundary and adds
+function-scoped forbidden import-alias coverage for the Level A scanner.
 
 ## Surfaces touched
 
@@ -85,8 +89,8 @@ Level A does **not** prove semantic correctness, product quality, completeness, 
 
 Passing checks from the post-merge integration pass:
 
-- `PYTHONPATH=polyglot-mini python3 -m unittest -v polyglot-mini/tests/test_dossier.py` — passed (`21` tests after review-fix regressions)
-- `scripts/verify_notebooklm_all_local.sh` — passed (`58` Python tests plus raw-transcript hygiene, compile, and diff whitespace checks)
+- `PYTHONPATH=polyglot-mini python3 -m unittest -v polyglot-mini/tests/test_dossier.py` — passed (`22` tests after review-fix regressions and function-scoped import hardening)
+- `scripts/verify_notebooklm_all_local.sh` — passed (`59` Python tests plus raw-transcript hygiene, compile, and diff whitespace checks)
 - `python3 -m compileall -q ...` for dossier/CLI/NotebookLM Python modules — passed
 - Local provider smoke — passed
   - run dir: `artifacts/runs/dossier-20260427T121411Z-3d5fbb0c`

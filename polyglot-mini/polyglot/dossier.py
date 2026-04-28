@@ -1535,6 +1535,22 @@ def _python_ast_details(source_text: str | None) -> dict:
             symbols.append({"kind": "class", "name": node.name, "digest": digest})
 
     for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                local_name = alias.asname or alias.name.split(".", 1)[0]
+                import_aliases[local_name] = alias.name
+                imports.add(alias.name)
+        elif isinstance(node, ast.ImportFrom):
+            module = node.module or ""
+            if module:
+                imports.add(module)
+            for alias in node.names:
+                imported = f"{module}.{alias.name}" if module else alias.name
+                local_name = alias.asname or alias.name
+                import_aliases[local_name] = imported
+                imports.add(imported)
+
+    for node in ast.walk(tree):
         if not isinstance(node, ast.Call):
             continue
         call_name = _call_name(node.func)

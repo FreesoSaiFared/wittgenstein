@@ -547,6 +547,49 @@ class DossierTests(unittest.TestCase):
             verification,
         )
 
+    def test_level_a_gate_rejects_forbidden_capability_function_scoped_alias_import(self) -> None:
+        result = self._generate()
+        run_dir = Path(result["run_dir"])
+        ledger = self._ledger(run_dir)
+        impl_claim = next(claim for claim in ledger["claims"] if claim["authorityClass"] == "implementation_fact")
+
+        (self.root / "polyglot" / "dossier.py").write_text(
+            "def fetch_remote_status():\n"
+            "    from requests import get as request_get\n"
+            '    return request_get("https://example.com/status").status_code\n'
+        )
+        self._write_patch_ledger(
+            run_dir,
+            result,
+            changes=[
+                {
+                    "file": "polyglot/dossier.py",
+                    "symbols": [
+                        {"kind": "function", "name": "fetch_remote_status"},
+                    ],
+                    "hunks": [
+                        {
+                            "hunkId": "HUNK-002D2",
+                            "claimIds": [impl_claim["claimId"]],
+                            "decisionIds": ["DEC-0001"],
+                        }
+                    ],
+                }
+            ],
+        )
+
+        verification = verify_patch_authority(run_dir=str(run_dir), repository_root=str(self.root))
+        self.assertFalse(verification["ok"], verification)
+        self.assertEqual(verification["error"]["code"], "PATCH_SCOPE_VIOLATION")
+        self.assertTrue(
+            any(
+                violation.get("reason") == "forbidden_capability"
+                and violation.get("capability") == "network_access"
+                for violation in verification["error"]["details"]["violations"]
+            ),
+            verification,
+        )
+
     def test_level_a_gate_rejects_forbidden_capability_urllib_from_import(self) -> None:
         result = self._generate()
         run_dir = Path(result["run_dir"])
