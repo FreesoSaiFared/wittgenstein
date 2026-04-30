@@ -14,38 +14,19 @@
     "docs/progress/notebooklm-provider-status.md",
     "docs/schemas/patch-plan-ir-v0.json"
   ],
-  "forbiddenPaths": [
-    "packages/*",
-    "apps/*"
-  ],
-  "forbiddenImports": [
-    "notebooklm",
-    "notebooklm_py",
-    "repomix"
-  ],
+  "forbiddenPaths": ["packages/*", "apps/*"],
+  "forbiddenImports": ["notebooklm", "notebooklm_py", "repomix"],
   "symbolAccounting": {
     "required": true,
     "language": "python",
-    "topLevelKinds": [
-      "function",
-      "class",
-      "import"
-    ],
+    "topLevelKinds": ["function", "class", "import"],
     "mode": "added_or_modified"
   },
-  "forbiddenStrings": [
-    "design_inference"
-  ],
+  "forbiddenStrings": ["design_inference"],
   "forbiddenCapabilities": [
     {
       "name": "network_access",
-      "pythonImports": [
-        "requests",
-        "httpx",
-        "aiohttp",
-        "socket",
-        "urllib.request"
-      ],
+      "pythonImports": ["requests", "httpx", "aiohttp", "socket", "urllib.request"],
       "pythonCalls": [
         "requests.get",
         "requests.post",
@@ -57,20 +38,16 @@
     },
     {
       "name": "notebooklm_runtime",
-      "pythonImports": [
-        "notebooklm",
-        "notebooklm_py"
-      ],
-      "pythonCalls": [
-        "notebooklm.Client",
-        "notebooklm_py.Client"
-      ]
+      "pythonImports": ["notebooklm", "notebooklm_py"],
+      "pythonCalls": ["notebooklm.Client", "notebooklm_py.Client"]
     }
   ],
   "notes": [
     "This is the current Level A hard gate.",
     "OMX hooks remain warnings/sentries only.",
     "Python top-level function/class/import additions or modifications must be accounted for in patch-ledger.json symbols[].",
+    "Allowed glob patterns are matched conservatively from the repository root and do not imply nested subtree or suffix-path authorization unless the pattern explicitly says so.",
+    "Forbidden trailing slash-star patterns such as packages/* and apps/* quarantine descendants.",
     "Level B PatchPlanIR is a future target and is not wired into execution yet."
   ]
 }

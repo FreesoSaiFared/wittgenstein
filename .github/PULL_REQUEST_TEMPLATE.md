@@ -3,6 +3,11 @@ Thanks for opening a PR! Wittgenstein is an early-stage project — any size of
 contribution is welcome, including docs, typos, and "make this clearer" edits.
 
 First PR? See CONTRIBUTING.md for the branch workflow and what we look for.
+
+House style — the canonical operating manual for code in this repo is
+docs/engineering-discipline.md (read-before-write, smallest-effective-change,
+no drive-by refactor, evidence-backed validation, structured reporting).
+Reviewers will defer to that doc when something looks off.
 -->
 
 ## Summary
@@ -15,6 +20,7 @@ First PR? See CONTRIBUTING.md for the branch workflow and what we look for.
 - [ ] Worktree is clean for the files touched by this PR
 - [ ] No unrelated local experiments / artifacts were pulled into the diff
 - [ ] PR is reviewable in one sitting; if not, I explained why it stays bundled
+- [ ] If this PR is doctrine-bearing (ADR / RFC / exec-plan / agent-guide / shared contract / codec-shape), it has a second independent reviewer; the author is not counting their own pass as ratification
 
 ## Type
 

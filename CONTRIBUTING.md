@@ -31,14 +31,23 @@ Stuck? [`SUPPORT.md`](SUPPORT.md) lists where to ask what.
 
 New contributors: pick one of these first.
 
-| Difficulty | Where to look | Example |
-|---|---|---|
-| **Easy** | Anything labelled `good first issue` or `docs` on GitHub | Fix a broken link, clarify a README section, add a missing type |
-| **Medium** | `⚠️ Experimental feedback` issues in [`docs/implementation-status.md`](docs/implementation-status.md) | Add a benchmark case, write a codec doc page, add a new LLM provider adapter |
-| **Deep** | `🔴 Stub` rows in [`docs/implementation-status.md`](docs/implementation-status.md) | Wire a frozen VQ decoder into `codec-image`, port a codec from Python to TypeScript |
+| Difficulty | Where to look                                                                                         | Example                                                                             |
+| ---------- | ----------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| **Easy**   | Anything labelled `good first issue` or `docs` on GitHub                                              | Fix a broken link, clarify a README section, add a missing type                     |
+| **Medium** | `⚠️ Experimental feedback` issues in [`docs/implementation-status.md`](docs/implementation-status.md) | Add a benchmark case, write a codec doc page, add a new LLM provider adapter        |
+| **Deep**   | `🔴 Stub` rows in [`docs/implementation-status.md`](docs/implementation-status.md)                    | Wire a frozen VQ decoder into `codec-image`, port a codec from Python to TypeScript |
 
-For architectural proposals, draft a PR that updates both code and an ADR under
-[`docs/adrs/`](docs/adrs/). See `docs/adrs/README.md` for the template.
+For architectural proposals, the flow is **brief → RFC → ADR → code**. See
+[`docs/tracks.md`](docs/tracks.md) for the contract between the researcher and hacker
+tracks, and:
+
+- [`docs/research/briefs/`](docs/research/briefs/) — pressure-test a claim first
+  (four-station loop: Steelman / Red team / Kill criteria / Verdict).
+- [`docs/rfcs/`](docs/rfcs/) — propose a concrete design; template at
+  [`docs/rfcs/00_template.md`](docs/rfcs/00_template.md).
+- [`docs/adrs/`](docs/adrs/) — the ADR ratifies the RFC and becomes load-bearing.
+
+Code PRs land the migration the ADR already accepted, not a fresh design decision.
 
 ## Branch workflow (please follow this)
 
@@ -96,6 +105,15 @@ Wittgenstein explicitly mixes both. To keep users safe:
 - New experimental surfaces should land behind a `--experimental` flag or an env var and
   be documented with their known failure modes.
 
+## Two-hats review
+
+Every brief, RFC, ADR, and architectural PR gets two reviews before merge:
+
+1. **Researcher hat** — does this survive contact with 2024–2026 literature?
+2. **Hacker hat** — if an agent read this at 2 a.m., would it write the right code?
+
+If either hat dissents, the doc iterates. See [`docs/tracks.md`](docs/tracks.md).
+
 ## Review protocol
 
 - Changes under `packages/core/src/runtime/`, `packages/schemas/`, and `packages/sandbox/`
@@ -107,6 +125,12 @@ Wittgenstein explicitly mixes both. To keep users safe:
 - Docs-only PRs: one maintainer review is enough, and often much faster than a code PR.
 
 ## Engineering rules (non-negotiable)
+
+> **House style — read this first.** [`docs/engineering-discipline.md`](docs/engineering-discipline.md)
+> is the canonical operating manual for code in this repo: read-before-write,
+> smallest-effective-change, no drive-by refactor, evidence-backed validation,
+> structured failure reporting. The bullets below are the load-bearing subset
+> that we will reject a PR over; the full sharp version lives in the doc.
 
 - TypeScript strict mode stays on.
 - zod schemas guard every boundary that crosses package or runtime edges.

@@ -1,5 +1,19 @@
 # Extending Wittgenstein
 
+> **Status:** mixed-surface reference. This page still contains useful extension recipes,
+> especially for `polyglot-mini` and older v0.1-era codec patterns, but it is **not**
+> the canonical execution brief for the current Codec v2 migration.
+>
+> For active v0.2 work, start with:
+>
+> - `AGENTS.md`
+> - `docs/exec-plans/active/codec-v2-port.md`
+> - `docs/agent-guides/`
+> - `docs/archive-policy.md` when deciding whether to refresh, archive, or retire an older surface
+>
+> Keep this page for reusable extension patterns and legacy recipes; do not treat every
+> example below as the current shipping shape.
+
 Wittgenstein has two surfaces that share one architecture:
 
 - **TypeScript monorepo** (`packages/*`) — production harness with typed contracts,
@@ -143,7 +157,7 @@ parameter spaces. They are tiny by design.
   If your adapter needs torch, it is probably doing too much work — consider moving the
   intelligence into the codec's renderer instead.
 - **Hashed bag-of-words embedding.** See `polyglot-mini/train/train.py::embed()`. Double-hash
-  + bigrams + L2 norm gets you dim 256–512 feature vectors with zero vocab to maintain.
+  - bigrams + L2 norm gets you dim 256–512 feature vectors with zero vocab to maintain.
 - **One-hop MLP.** Two to three hidden layers is enough. Adam with gradient clipping.
 - **Save as `.npz`.** Load via `np.load()`. No pickle, no custom serialisation.
 
@@ -250,11 +264,12 @@ A new codec is not done until these are updated:
 
 ## Where to look for precedent
 
-| You want to... | Read this first |
-|---|---|
-| Add a new codec in TS | `packages/codec-sensor/src/` (end-to-end real renderer, no external deps) |
-| Add a new codec in Python | `polyglot-mini/polyglot/sensor.py` (same codec, Python surface) |
-| Train a small adapter | `polyglot-mini/train/train_audio.py` (cleanest, smallest, fastest) |
-| Add an LLM provider | `polyglot-mini/polyglot/llm.py::_call_kimi_k2()` (stdlib urllib, no SDK) |
-| Add a sandbox boundary | `polyglot-mini/polyglot/sandbox.py` (subprocess with pre-injected globals) |
-| Shape a new IR schema | `packages/codec-sensor/src/schema.ts` (zod + preamble generator) |
+| You want to...                                            | Read this first                                                            |
+| --------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Understand the repo's engineering standard before editing | `docs/engineering-discipline.md`                                           |
+| Add a new codec in TS                                     | `packages/codec-sensor/src/` (end-to-end real renderer, no external deps)  |
+| Add a new codec in Python                                 | `polyglot-mini/polyglot/sensor.py` (same codec, Python surface)            |
+| Train a small adapter                                     | `polyglot-mini/train/train_audio.py` (cleanest, smallest, fastest)         |
+| Add an LLM provider                                       | `polyglot-mini/polyglot/llm.py::_call_kimi_k2()` (stdlib urllib, no SDK)   |
+| Add a sandbox boundary                                    | `polyglot-mini/polyglot/sandbox.py` (subprocess with pre-injected globals) |
+| Shape a new IR schema                                     | `packages/codec-sensor/src/schema.ts` (zod + preamble generator)           |

@@ -1,0 +1,72 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    name: Publish GitHub Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Resolve version from tag
+        id: version
+        run: |
+          TAG="${GITHUB_REF##*/}"
+          VERSION="${TAG#v}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          # Mark anything with a hyphen (alpha/beta/rc/pre) as prerelease.
+          if [[ "$VERSION" == *-* ]]; then
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Extract changelog section
+        id: changelog
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          # Pull the section between [VERSION] and the next top-level "## [" heading.
+          # Uses index() literal-string match instead of regex so brackets in
+          # the version (e.g. "[0.2.0-alpha.1]") are not interpreted as a
+          # character class. This is the bug that bit v0.2.0-alpha.1's first
+          # publish — the regex "^## [0.2.0-alpha.1]" matched every `## [...]`
+          # heading because `[0.2-alpha1]` parsed as a char class.
+          awk -v marker="## [$VERSION]" '
+            index($0, marker) == 1 { flag=1; next }
+            flag && index($0, "## [") == 1 { exit }
+            flag { print }
+          ' CHANGELOG.md > .release-notes.md
+          if [ ! -s .release-notes.md ]; then
+            echo "No CHANGELOG section found for $VERSION; falling back to autogen." >&2
+            echo "fallback=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "fallback=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Sanity-check root package.json version matches tag
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          if [ "$PKG_VERSION" != "${{ steps.version.outputs.version }}" ]; then
+            echo "::error::Tag ${{ steps.version.outputs.tag }} does not match package.json version $PKG_VERSION"
+            exit 1
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.tag }}
+          prerelease: ${{ steps.version.outputs.prerelease }}
+          generate_release_notes: ${{ steps.changelog.outputs.fallback == 'true' }}
+          body_path: ${{ steps.changelog.outputs.fallback == 'true' && '' || '.release-notes.md' }}
