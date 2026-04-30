@@ -1,6 +1,6 @@
 # Dossier codec (local first)
 
-The dossier codec is the first-pass context backend for Wittgenstein's Python prototype surface. It is the local prototype of a broader **Tarski** idea: an authority runtime that records which evidence may authorize implementation work. The code and CLI names remain `dossier`, `polyglot`, and Wittgenstein-lineage names for now; Tarski is the framework concept, not a package rename in this lane.
+The dossier codec is the first-pass context backend for Wittgenstein's Python prototype surface. It is the local prototype of a broader **Tarski** idea: an authority-runtime that records which evidence may authorize implementation work. The code and CLI names remain `dossier`, `polyglot`, and Wittgenstein-lineage names for now; Tarski is the framework concept, not a package rename in this lane.
 
 The research framing is **Artifact-Deterministic Interfaces**: files are acceptable handoff artifacts only when their authority, provenance, and replay path can be checked mechanically.
 
